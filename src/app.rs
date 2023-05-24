@@ -1,13 +1,12 @@
 use chrono::offset::*;
-use chrono::Datelike;
 use chrono::DateTime;
+use chrono::Datelike;
 use chrono::NaiveDate;
 
-/// egui template sourced from: 
+/// egui template sourced from:
 /// https://github.com/emilk/eframe_template
 
-#[derive(Debug, PartialEq)]
-#[derive(serde::Deserialize, serde::Serialize)]
+#[derive(Debug, PartialEq, serde::Deserialize, serde::Serialize)]
 enum AmPm {
     Am,
     Pm,
@@ -42,13 +41,12 @@ pub struct KrabbyDo {
 
     #[serde(skip)]
     date_time: DateTime<Utc>,
-    
 }
 
 impl Default for KrabbyDo {
     fn default() -> Self {
         Self {
-            is_show_new_reminder_dialog:true,
+            is_show_new_reminder_dialog: true,
             is_date_picker_open: false,
             new_event_title: "".to_owned(),
             new_event_details: "".to_owned(),
@@ -96,7 +94,16 @@ impl KrabbyDo {
         if self.am_pm == AmPm::Pm {
             hour += 12;
         }
-        self.date_time = chrono::offset::Utc.with_ymd_and_hms(self.date.unwrap().year(), self.date.unwrap().month(), self.date.unwrap().day(), hour, self.minute, 0).unwrap();
+        self.date_time = chrono::offset::Utc
+            .with_ymd_and_hms(
+                self.date.unwrap().year(),
+                self.date.unwrap().month(),
+                self.date.unwrap().day(),
+                hour,
+                self.minute,
+                0,
+            )
+            .unwrap();
         println!("Date Time: {}", self.date_time);
         self.date_time.clone()
     }
@@ -138,9 +145,8 @@ impl eframe::App for KrabbyDo {
         });
 
         if self.is_show_new_reminder_dialog {
-
-            const LABEL_WIDTH:f32 = 50.0;
-            const Y_SPACING:f32 = 10.0;
+            const LABEL_WIDTH: f32 = 50.0;
+            const Y_SPACING: f32 = 10.0;
 
             self.hour = self.hour.clamp(1, 12);
             self.minute = self.minute.clamp(0, 60);
@@ -152,21 +158,29 @@ impl eframe::App for KrabbyDo {
                         ui.set_min_width(LABEL_WIDTH);
                         ui.label("Title");
                     });
-                    ui.add(egui::widgets::TextEdit::singleline(&mut self.new_event_title).hint_text("Enter event title"));
+                    ui.add(
+                        egui::widgets::TextEdit::singleline(&mut self.new_event_title)
+                            .hint_text("Enter event title"),
+                    );
                 });
                 ui.with_layout(egui::Layout::left_to_right(egui::Align::TOP), |ui| {
                     ui.with_layout(egui::Layout::left_to_right(egui::Align::TOP), |ui| {
                         ui.set_min_width(LABEL_WIDTH);
                         ui.label("Details");
                     });
-                    ui.add(egui::widgets::TextEdit::multiline(&mut self.new_event_details).hint_text("Enter event details"));
+                    ui.add(
+                        egui::widgets::TextEdit::multiline(&mut self.new_event_details)
+                            .hint_text("Enter event details"),
+                    );
                 });
                 ui.with_layout(egui::Layout::left_to_right(egui::Align::TOP), |ui| {
                     ui.with_layout(egui::Layout::left_to_right(egui::Align::TOP), |ui| {
                         ui.set_min_width(LABEL_WIDTH);
                         ui.label("Date");
                     });
-                    let date = self.date.get_or_insert_with(|| chrono::offset::Utc::now().date_naive());
+                    let date = self
+                        .date
+                        .get_or_insert_with(|| chrono::offset::Utc::now().date_naive());
                     ui.add(egui_extras::DatePickerButton::new(date));
                 });
                 ui.with_layout(egui::Layout::left_to_right(egui::Align::TOP), |ui| {
