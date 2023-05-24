@@ -15,7 +15,7 @@ enum AmPm {
 /// We derive Deserialize/Serialize so we can persist app state on shutdown.
 #[derive(serde::Deserialize, serde::Serialize)]
 #[serde(default)] // if we add new fields, give them default values when deserializing old state
-pub struct KrabbyDo {
+pub struct KrabbyDoUi {
     #[serde(skip)]
     is_show_new_reminder_dialog: bool,
 
@@ -43,7 +43,7 @@ pub struct KrabbyDo {
     date_time: DateTime<Utc>,
 }
 
-impl Default for KrabbyDo {
+impl Default for KrabbyDoUi {
     fn default() -> Self {
         Self {
             is_show_new_reminder_dialog: true,
@@ -59,7 +59,7 @@ impl Default for KrabbyDo {
     }
 }
 
-impl KrabbyDo {
+impl KrabbyDoUi {
     pub fn new(cc: &eframe::CreationContext<'_>) -> Self {
         if let Some(storage) = cc.storage {
             return eframe::get_value(storage, eframe::APP_KEY).unwrap_or_default();
@@ -109,7 +109,7 @@ impl KrabbyDo {
     }
 }
 
-impl eframe::App for KrabbyDo {
+impl eframe::App for KrabbyDoUi {
     /// Called by the frame work to save state before shutdown.
     fn save(&mut self, storage: &mut dyn eframe::Storage) {
         eframe::set_value(storage, eframe::APP_KEY, self);
@@ -121,7 +121,7 @@ impl eframe::App for KrabbyDo {
             egui::menu::bar(ui, |ui| {
                 ui.menu_button("File", |ui| {
                     if ui.button("New Reminder").clicked() {
-                        KrabbyDo::handle_menu_new_clicked();
+                        KrabbyDoUi::handle_menu_new_clicked();
                     }
                     if ui.button("Quit").clicked() {
                         _frame.close();
@@ -209,9 +209,9 @@ impl eframe::App for KrabbyDo {
                     ui.set_max_width(330.0);
                     ui.with_layout(egui::Layout::right_to_left(egui::Align::TOP), |ui| {
                         if ui.button("Cancel").clicked() {
-                            KrabbyDo::handle_new_cancel_button_clicked(self);
+                            KrabbyDoUi::handle_new_cancel_button_clicked(self);
                         } else if ui.button("OK").clicked() {
-                            KrabbyDo::handle_new_ok_button_clicked(self);
+                            KrabbyDoUi::handle_new_ok_button_clicked(self);
                         }
                     });
                 });

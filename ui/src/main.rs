@@ -6,6 +6,6 @@ fn main() -> eframe::Result<()> {
     eframe::run_native(
         "Krabby Do",
         native_options,
-        Box::new(|cc| Box::new(krabby_do::KrabbyDo::new(cc))),
+        Box::new(|cc| Box::new(ui::KrabbyDoUi::new(cc))),
     )
 }
