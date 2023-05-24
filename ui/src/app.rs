@@ -54,7 +54,7 @@ impl Default for KrabbyDoUi {
             hour: 6,
             minute: 30,
             am_pm: AmPm::Pm,
-            date_time: Utc.with_ymd_and_hms(2023, 5, 20, 22, 02, 0).unwrap(),
+            date_time: Utc.with_ymd_and_hms(2023, 5, 20, 22, 2, 0).unwrap(),
         }
     }
 }
@@ -86,7 +86,7 @@ impl KrabbyDoUi {
     }
     pub fn get_selected_date(&mut self) -> Option<NaiveDate> {
         println!("Date selected: {}", self.date.unwrap_or_default());
-        self.date.clone()
+        self.date
     }
     pub fn get_selected_date_time(&mut self) -> DateTime<Utc> {
         // Considering AM / PM
@@ -105,7 +105,7 @@ impl KrabbyDoUi {
             )
             .unwrap();
         println!("Date Time: {}", self.date_time);
-        self.date_time.clone()
+        self.date_time
     }
 }
 
