@@ -2,9 +2,17 @@ use chrono::offset::*;
 use chrono::DateTime;
 use chrono::Datelike;
 use chrono::NaiveDate;
+use egui::{Ui, ScrollArea};
 
-/// egui template sourced from:
-/// https://github.com/emilk/eframe_template
+// egui template sourced from:
+// https://github.com/emilk/eframe_template
+
+pub struct EventEntry {
+    title: String,
+    details: String,
+    date_time: DateTime<Utc>,
+    is_complete: bool,
+}
 
 #[derive(Debug, PartialEq, serde::Deserialize, serde::Serialize)]
 enum AmPm {
@@ -41,12 +49,15 @@ pub struct KrabbyDoUi {
 
     #[serde(skip)]
     date_time: DateTime<Utc>,
+
+    #[serde(skip)]
+    test_entries: Vec<EventEntry>,
 }
 
 impl Default for KrabbyDoUi {
     fn default() -> Self {
         Self {
-            is_show_new_reminder_dialog: true,
+            is_show_new_reminder_dialog: false,
             is_date_picker_open: false,
             new_event_title: "".to_owned(),
             new_event_details: "".to_owned(),
@@ -55,6 +66,33 @@ impl Default for KrabbyDoUi {
             minute: 30,
             am_pm: AmPm::Pm,
             date_time: Utc.with_ymd_and_hms(2023, 5, 20, 22, 2, 0).unwrap(),
+            test_entries: // https://doc.rust-lang.org/std/vec/struct.Vec.html
+                vec![
+                    EventEntry {
+                    title: String::from("Alpha"),
+                    details: String::from("Alpha - Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum"),
+                    date_time: Utc.with_ymd_and_hms(2023, 5, 14, 22, 2, 0).unwrap(),
+                    is_complete: false,
+                },
+                EventEntry {
+                    title: String::from("Bravo"),
+                    details: String::from("Bravo - Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum"),
+                    date_time: Utc.with_ymd_and_hms(2022, 5, 14, 22, 2, 0).unwrap(),
+                    is_complete: false,
+                },
+                EventEntry {
+                    title: String::from("Charlie"),
+                    details: String::from("Charlie - Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum"),
+                    date_time: Utc.with_ymd_and_hms(2021, 5, 14, 22, 2, 0).unwrap(),
+                    is_complete: false,
+                },
+                EventEntry {
+                    title: String::from("Delta"),
+                    details: String::from("Delta - Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum"),
+                    date_time: Utc.with_ymd_and_hms(2020, 5, 14, 22, 2, 0).unwrap(),
+                    is_complete: false,
+                },
+            ],
         }
     }
 }
@@ -71,8 +109,9 @@ impl KrabbyDoUi {
     // I have printed out the values of variables involved in the UI for your
     // convenience, you can use these to interact with and implement the backend
 
-    pub fn handle_menu_new_clicked() {
-        println!("\nNew Reminder menu option clicked!");
+    pub fn handle_menu_new_clicked(&mut self) {
+        self.is_show_new_reminder_dialog = true;
+        
     }
     pub fn handle_new_ok_button_clicked(&mut self) {
         println!("Event Title: {}", self.new_event_title);
@@ -107,9 +146,31 @@ impl KrabbyDoUi {
         println!("Date Time: {}", self.date_time);
         self.date_time
     }
+    pub fn list_upcoming_events(&mut self, ui: &mut Ui) {
+        ScrollArea::vertical().show(ui, |ui| {
+            for entry in &self.test_entries {
+                ui.set_min_width(140.0);
+                ui.style_mut().spacing.item_spacing.y = 30.0;
+                ui.with_layout(egui::Layout::top_down(egui::Align::TOP), |ui| {
+                    ui.with_layout(egui::Layout::top_down(egui::Align::TOP), |ui| {
+                        if ui.button(entry.title.clone()).clicked() {
+                            KrabbyDoUi::handle_event_list_item_clicked(entry.clone());
+                        }
+                    });
+                });
+            }
+        });  
+    }
+    pub fn handle_event_list_item_clicked(entry: &EventEntry) {
+        println!("Event Title: {}", entry.title);
+        println!("Event Details: {}", entry.details);
+        println!("Event Date and Time: {}", entry.date_time);
+        println!("Is Complete: {}", entry.is_complete);
+    }
 }
 
 impl eframe::App for KrabbyDoUi {
+
     /// Called by the frame work to save state before shutdown.
     fn save(&mut self, storage: &mut dyn eframe::Storage) {
         eframe::set_value(storage, eframe::APP_KEY, self);
@@ -120,8 +181,8 @@ impl eframe::App for KrabbyDoUi {
         egui::TopBottomPanel::top("menu_panel").show(ctx, |ui| {
             egui::menu::bar(ui, |ui| {
                 ui.menu_button("File", |ui| {
-                    if ui.button("New Reminder").clicked() {
-                        KrabbyDoUi::handle_menu_new_clicked();
+                    if ui.button("New Event").clicked() {
+                        KrabbyDoUi::handle_menu_new_clicked(self);
                     }
                     if ui.button("Quit").clicked() {
                         _frame.close();
@@ -131,8 +192,19 @@ impl eframe::App for KrabbyDoUi {
         });
 
         egui::SidePanel::left("side_panel").show(ctx, |ui| {
+            ui.style_mut().spacing.item_spacing.y = 10.0;
             ui.heading("Upcoming Events");
-
+            ui.separator();
+            ui.with_layout(egui::Layout::left_to_right(egui::Align::TOP), |ui| {
+                ui.with_layout(egui::Layout::left_to_right(egui::Align::TOP), |ui| {
+                    if ui.button("New Event").clicked() {
+                        KrabbyDoUi::handle_menu_new_clicked(self);
+                    }
+                });
+            });
+            ui.separator();
+            self.list_upcoming_events(ui);
+            ui.separator();
             ui.with_layout(egui::Layout::bottom_up(egui::Align::LEFT), |ui| {
                 ui.horizontal(|ui| {
                     ui.label("Rohan, Kajal, Prachi");
@@ -151,7 +223,7 @@ impl eframe::App for KrabbyDoUi {
             self.hour = self.hour.clamp(1, 12);
             self.minute = self.minute.clamp(0, 60);
 
-            egui::Window::new("New Reminder").show(ctx, |ui| {
+            egui::Window::new("New Event").show(ctx, |ui| {
                 ui.style_mut().spacing.item_spacing.y = Y_SPACING;
                 ui.with_layout(egui::Layout::left_to_right(egui::Align::TOP), |ui| {
                     ui.with_layout(egui::Layout::left_to_right(egui::Align::TOP), |ui| {
