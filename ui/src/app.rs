@@ -11,7 +11,17 @@ pub struct EventEntry {
     title: String,
     details: String,
     date_time: DateTime<Utc>,
-    is_complete: bool,
+    is_done: bool,
+}
+impl Clone for EventEntry {
+    fn clone(&self) -> Self {
+        EventEntry {
+            title: self.title.clone(),
+            details: self.details.clone(),
+            date_time: self.date_time.clone(),
+            is_done: self.is_done,
+        }
+    }
 }
 
 #[derive(Debug, PartialEq, serde::Deserialize, serde::Serialize)]
@@ -51,7 +61,13 @@ pub struct KrabbyDoUi {
     date_time: DateTime<Utc>,
 
     #[serde(skip)]
+    is_done: bool,
+
+    #[serde(skip)]
     test_entries: Vec<EventEntry>,
+
+    #[serde(skip)]
+    test_entries_completed: Vec<EventEntry>,
 }
 
 impl Default for KrabbyDoUi {
@@ -61,6 +77,7 @@ impl Default for KrabbyDoUi {
             is_date_picker_open: false,
             new_event_title: "".to_owned(),
             new_event_details: "".to_owned(),
+            is_done: false,
             date: None,
             hour: 6,
             minute: 30,
@@ -72,25 +89,45 @@ impl Default for KrabbyDoUi {
                     title: String::from("Alpha"),
                     details: String::from("Alpha - Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum"),
                     date_time: Utc.with_ymd_and_hms(2023, 5, 14, 22, 2, 0).unwrap(),
-                    is_complete: false,
+                    is_done: false,
                 },
                 EventEntry {
                     title: String::from("Bravo"),
                     details: String::from("Bravo - Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum"),
                     date_time: Utc.with_ymd_and_hms(2022, 5, 14, 22, 2, 0).unwrap(),
-                    is_complete: false,
+                    is_done: false,
                 },
                 EventEntry {
                     title: String::from("Charlie"),
                     details: String::from("Charlie - Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum"),
                     date_time: Utc.with_ymd_and_hms(2021, 5, 14, 22, 2, 0).unwrap(),
-                    is_complete: false,
+                    is_done: false,
                 },
                 EventEntry {
                     title: String::from("Delta"),
                     details: String::from("Delta - Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum"),
                     date_time: Utc.with_ymd_and_hms(2020, 5, 14, 22, 2, 0).unwrap(),
-                    is_complete: false,
+                    is_done: false,
+                },
+            ],
+            test_entries_completed: vec![
+                EventEntry {
+                title: String::from("Echo"),
+                details: String::from("Echo details"),
+                date_time: Utc.with_ymd_and_hms(2019, 5, 14, 22, 2, 0).unwrap(),
+                is_done: true,
+                },
+                EventEntry {
+                    title: String::from("Foxtrot"),
+                    details: String::from("Foxtrot details"),
+                    date_time: Utc.with_ymd_and_hms(2018, 5, 14, 22, 2, 0).unwrap(),
+                    is_done: true,
+                },
+                EventEntry {
+                    title: String::from("Golf"),
+                    details: String::from("Golf details"),
+                    date_time: Utc.with_ymd_and_hms(2017, 5, 14, 22, 2, 0).unwrap(),
+                    is_done: true,
                 },
             ],
         }
@@ -117,8 +154,19 @@ impl KrabbyDoUi {
         println!("Event Title: {}", self.new_event_title);
         println!("Event Details: {}", self.new_event_details);
         self.is_show_new_reminder_dialog = false;
-        self.get_selected_date();
-        self.get_selected_date_time();
+        println!("Date Time: {}", self.get_selected_date_time());
+        println!("Is Done: {}", self.is_done);
+        let new_entry = EventEntry {
+            title: self.new_event_title.clone(),
+            details: self.new_event_details.clone(),
+            date_time: self.get_selected_date_time(),
+            is_done: self.is_done,
+        };
+        if self.is_done {
+            self.test_entries_completed.push(new_entry);
+        } else {
+            self.test_entries.push(new_entry);
+        }
     }
     pub fn handle_new_cancel_button_clicked(&mut self) {
         self.is_show_new_reminder_dialog = false;
@@ -143,29 +191,31 @@ impl KrabbyDoUi {
                 0,
             )
             .unwrap();
-        println!("Date Time: {}", self.date_time);
         self.date_time
     }
-    pub fn list_upcoming_events(&mut self, ui: &mut Ui) {
-        ScrollArea::vertical().show(ui, |ui| {
-            for entry in &self.test_entries {
-                ui.set_min_width(140.0);
-                ui.style_mut().spacing.item_spacing.y = 30.0;
-                ui.with_layout(egui::Layout::top_down(egui::Align::TOP), |ui| {
+    pub fn list_events(&mut self, ui: &mut Ui, widget_id: u32, entries: Vec<EventEntry>) {
+        ui.push_id(widget_id, |ui| {
+            ScrollArea::vertical().show(ui, |ui| {
+                for entry in entries {
+                    ui.set_min_width(140.0);
+                    ui.style_mut().spacing.item_spacing.y = 30.0;
                     ui.with_layout(egui::Layout::top_down(egui::Align::TOP), |ui| {
-                        if ui.button(entry.title.clone()).clicked() {
-                            KrabbyDoUi::handle_event_list_item_clicked(entry.clone());
-                        }
+                        ui.with_layout(egui::Layout::top_down(egui::Align::TOP), |ui| {
+                            if ui.button(entry.title.clone()).clicked() {
+                                KrabbyDoUi::handle_event_list_item_clicked(&entry);
+                            }
+                        });
                     });
-                });
-            }
-        });  
+                }
+            });  
+        });
+        
     }
     pub fn handle_event_list_item_clicked(entry: &EventEntry) {
         println!("Event Title: {}", entry.title);
         println!("Event Details: {}", entry.details);
         println!("Event Date and Time: {}", entry.date_time);
-        println!("Is Complete: {}", entry.is_complete);
+        println!("Is Done: {}", entry.is_done);
     }
 }
 
@@ -191,10 +241,14 @@ impl eframe::App for KrabbyDoUi {
             });
         });
 
-        egui::SidePanel::left("side_panel").show(ctx, |ui| {
+        egui::SidePanel::left("left_side_panel").show(ctx, |ui| {
             ui.style_mut().spacing.item_spacing.y = 10.0;
-            ui.heading("Upcoming Events");
-            ui.separator();
+            ui.with_layout(egui::Layout::left_to_right(egui::Align::TOP), |ui| {
+                ui.with_layout(egui::Layout::left_to_right(egui::Align::TOP), |ui| {
+                    ui.set_min_width(10.0);
+                });
+            });
+            
             ui.with_layout(egui::Layout::left_to_right(egui::Align::TOP), |ui| {
                 ui.with_layout(egui::Layout::left_to_right(egui::Align::TOP), |ui| {
                     if ui.button("New Event").clicked() {
@@ -203,13 +257,38 @@ impl eframe::App for KrabbyDoUi {
                 });
             });
             ui.separator();
-            self.list_upcoming_events(ui);
+            ui.heading("Upcoming Events");
+            ui.style_mut().spacing.item_spacing.y = 5.0;
+            ui.with_layout(egui::Layout::left_to_right(egui::Align::TOP), |ui| {
+                ui.with_layout(egui::Layout::left_to_right(egui::Align::TOP), |ui| {
+                    ui.set_min_width(10.0);
+                });
+            });
+            self.list_events(ui, 123456, self.test_entries.clone());
             ui.separator();
             ui.with_layout(egui::Layout::bottom_up(egui::Align::LEFT), |ui| {
                 ui.horizontal(|ui| {
                     ui.label("Rohan, Kajal, Prachi");
                 });
             });
+        });
+
+        egui::SidePanel::right("right_side_panel").show(ctx, |ui| {
+            ui.style_mut().spacing.item_spacing.y = 10.0;
+            ui.with_layout(egui::Layout::left_to_right(egui::Align::TOP), |ui| {
+                ui.with_layout(egui::Layout::left_to_right(egui::Align::TOP), |ui| {
+                    ui.set_min_width(10.0);
+                });
+            });
+            ui.heading("Marked Done");
+            ui.style_mut().spacing.item_spacing.y = 5.0;
+            ui.with_layout(egui::Layout::left_to_right(egui::Align::TOP), |ui| {
+                ui.with_layout(egui::Layout::left_to_right(egui::Align::TOP), |ui| {
+                    ui.set_min_width(10.0);
+                });
+            });
+            self.list_events(ui, 123457, self.test_entries_completed.clone());
+            ui.separator();
         });
 
         egui::CentralPanel::default().show(ctx, |ui| {
@@ -275,6 +354,12 @@ impl eframe::App for KrabbyDoUi {
                             ui.selectable_value(&mut self.am_pm, AmPm::Am, "AM");
                             ui.selectable_value(&mut self.am_pm, AmPm::Pm, "PM");
                         });
+                    });
+                });
+                ui.with_layout(egui::Layout::left_to_right(egui::Align::TOP), |ui| {
+                    ui.with_layout(egui::Layout::left_to_right(egui::Align::TOP), |ui| {
+                        ui.set_min_width(LABEL_WIDTH);
+                        ui.add(egui::Checkbox::new(&mut self.is_done, "Mark Done"));
                     });
                 });
                 ui.with_layout(egui::Layout::left_to_right(egui::Align::TOP), |ui| {
