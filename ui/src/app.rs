@@ -468,10 +468,10 @@ impl eframe::App for KrabbyDoUi {
     fn update(&mut self, ctx: &egui::Context, _frame: &mut eframe::Frame) {
         let Self { .. } = self;
 
-        // Menu bar
+        // Menu Bar
         self.setup_menu_bar(ctx, _frame);
 
-        // Left panel
+        // Left Panel
         self.setup_left_panel(ctx);
 
         // Right Panel
