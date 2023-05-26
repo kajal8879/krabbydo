@@ -1,9 +1,5 @@
 [workspace]
-name = "krabby_do"
-version = "0.1.0"
-authors = ["Rohan Singh <rohsingh@pdx.edu>", "Kajal Patil <kajal@pdx.edu>", "Prachi Kashyap <pk23@pdx.edu>"]
-edition = "2021"
-
 members = [
     "ui",
     ]
+    
