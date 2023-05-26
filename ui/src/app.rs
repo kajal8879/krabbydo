@@ -2,6 +2,7 @@ use chrono::offset::*;
 use chrono::DateTime;
 use chrono::Datelike;
 use chrono::NaiveDate;
+use chrono::Timelike;
 use egui::{ScrollArea, Ui};
 
 // egui template sourced from:
@@ -173,9 +174,22 @@ impl KrabbyDoUi {
         Default::default()
     }
 
-    /// Handle New Event menu option clicked; show New Event dialog
+    /// Handle New Event menu option clicked;
+    /// 1. Show New Event dialog
+    /// 2. Load current time hours and minutes into their corresponding fields in dialog
     pub fn handle_menu_new_clicked(&mut self) {
         self.is_show_new_reminder_dialog = true;
+        self.new_event_am_pm = AmPm::Am;
+        let mut hour = Local::now().time().hour();
+        if hour > 11 {
+            self.new_event_am_pm = AmPm::Pm;
+        }
+        if hour > 12 {
+            hour -= 12;
+        }
+        self.new_event_hour = hour;
+        let minute = Local::now().time().minute();
+        self.new_event_minute = minute;
     }
 
     /// Handle OK button clicked of the New Event dialog;
