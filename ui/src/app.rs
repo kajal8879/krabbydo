@@ -2,7 +2,7 @@ use chrono::offset::*;
 use chrono::DateTime;
 use chrono::Datelike;
 use chrono::NaiveDate;
-use egui::{Ui, ScrollArea};
+use egui::{ScrollArea, Ui};
 
 // egui template sourced from:
 // https://github.com/emilk/eframe_template
@@ -23,7 +23,7 @@ impl Clone for EventEntry {
         EventEntry {
             title: self.title.clone(),
             details: self.details.clone(),
-            date_time: self.date_time.clone(),
+            date_time: self.date_time,
             is_done: self.is_done,
         }
     }
@@ -39,6 +39,7 @@ enum AmPm {
 /// We derive Deserialize/Serialize so we can persist app state on shutdown.
 #[derive(serde::Deserialize, serde::Serialize)]
 #[serde(default)] // if we add new fields, give them default values when deserializing old state
+/// Struct to store UI components of Krabby Do
 pub struct KrabbyDoUi {
     /// To control the display of New Event dialog
     #[serde(skip)]
@@ -74,7 +75,7 @@ pub struct KrabbyDoUi {
     /// To store the value of date and time in a unified format
     #[serde(skip)]
     date_time: DateTime<Utc>,
-    
+
     /// Vector of test entries
     #[serde(skip)]
     test_entries: Vec<EventEntry>,
@@ -164,7 +165,6 @@ impl Default for KrabbyDoUi {
 }
 
 impl KrabbyDoUi {
-
     /// New function to set up the UI
     pub fn new(cc: &eframe::CreationContext<'_>) -> Self {
         if let Some(storage) = cc.storage {
@@ -176,7 +176,6 @@ impl KrabbyDoUi {
     /// Handle New Event menu option clicked; show New Event dialog
     pub fn handle_menu_new_clicked(&mut self) {
         self.is_show_new_reminder_dialog = true;
-        
     }
 
     /// Handle OK button clicked of the New Event dialog;
@@ -216,18 +215,23 @@ impl KrabbyDoUi {
 
         self.details_panel_title = entry.title.clone();
         self.details_panel_details = entry.details.clone();
-        
+
         // https://docs.rs/chrono/0.4.24/chrono/format/strftime/index.html
-        self.details_panel_time = format!("{}", entry.date_time.format("Date: %A, %B %e, %Y \tTime: %l:%M %p"));
+        self.details_panel_time = format!(
+            "{}",
+            entry
+                .date_time
+                .format("Date: %A, %B %e, %Y \tTime: %l:%M %p")
+        );
     }
-    
+
     /// Get the date selected by the date picker widget in NaiveDate format wrapped in Option
     pub fn get_selected_date(&mut self) -> Option<NaiveDate> {
         println!("Date selected: {}", self.new_event_date.unwrap_or_default());
         self.new_event_date
     }
 
-    /// Get date and time selected by the user in the dialog in DateTime<Utc> format 
+    /// Get date and time selected by the user in the dialog in DateTime<Utc> format
     pub fn get_selected_date_time(&mut self) -> DateTime<Utc> {
         // Considering AM / PM
         let mut hour = self.new_event_hour;
@@ -262,11 +266,10 @@ impl KrabbyDoUi {
                         });
                     });
                 }
-            });  
+            });
         });
-        
     }
-    
+
     /// Set up menu bar
     pub fn setup_menu_bar(&mut self, ctx: &egui::Context, _frame: &mut eframe::Frame) {
         egui::TopBottomPanel::top("menu_panel").show(ctx, |ui| {
@@ -281,7 +284,6 @@ impl KrabbyDoUi {
                 });
             });
         });
-        
     }
 
     /// Set up Left Panel that contains New Event button, Upcoming Events list and authors
@@ -293,7 +295,7 @@ impl KrabbyDoUi {
                     ui.set_min_width(10.0);
                 });
             });
-            
+
             ui.with_layout(egui::Layout::left_to_right(egui::Align::TOP), |ui| {
                 ui.with_layout(egui::Layout::left_to_right(egui::Align::TOP), |ui| {
                     if ui.button("New Event").clicked() {
@@ -349,12 +351,10 @@ impl KrabbyDoUi {
             ui.with_layout(egui::Layout::left_to_right(egui::Align::TOP), |ui| {
                 ui.set_min_width(200.0);
                 ui.add(egui::Label::new(self.details_panel_details.clone()).wrap(true));
-
             });
             ui.separator();
             ui.with_layout(egui::Layout::left_to_right(egui::Align::TOP), |ui| {
                 ui.add(egui::Label::new(self.details_panel_time.clone()).wrap(true));
-
             });
             ui.separator();
         });
@@ -363,95 +363,96 @@ impl KrabbyDoUi {
     /// Set up New Event dialog
     pub fn setup_new_event_dialog(&mut self, ctx: &egui::Context) {
         const LABEL_WIDTH: f32 = 50.0;
-            const Y_SPACING: f32 = 10.0;
+        const Y_SPACING: f32 = 10.0;
 
-            self.new_event_hour = self.new_event_hour.clamp(1, 12);
-            self.new_event_minute = self.new_event_minute.clamp(0, 60);
+        self.new_event_hour = self.new_event_hour.clamp(1, 12);
+        self.new_event_minute = self.new_event_minute.clamp(0, 60);
 
-            egui::Window::new("New Event").show(ctx, |ui| {
-                ui.style_mut().spacing.item_spacing.y = Y_SPACING;
+        egui::Window::new("New Event").show(ctx, |ui| {
+            ui.style_mut().spacing.item_spacing.y = Y_SPACING;
+            ui.with_layout(egui::Layout::left_to_right(egui::Align::TOP), |ui| {
                 ui.with_layout(egui::Layout::left_to_right(egui::Align::TOP), |ui| {
-                    ui.with_layout(egui::Layout::left_to_right(egui::Align::TOP), |ui| {
-                        ui.set_min_width(LABEL_WIDTH);
-                        ui.label("Title");
-                    });
-                    ui.add(
-                        egui::widgets::TextEdit::singleline(&mut self.new_event_title)
-                            .hint_text("Enter event title"),
-                    );
+                    ui.set_min_width(LABEL_WIDTH);
+                    ui.label("Title");
+                });
+                ui.add(
+                    egui::widgets::TextEdit::singleline(&mut self.new_event_title)
+                        .hint_text("Enter event title"),
+                );
+            });
+            ui.with_layout(egui::Layout::left_to_right(egui::Align::TOP), |ui| {
+                ui.with_layout(egui::Layout::left_to_right(egui::Align::TOP), |ui| {
+                    ui.set_min_width(LABEL_WIDTH);
+                    ui.label("Details");
+                });
+                ui.add(
+                    egui::widgets::TextEdit::multiline(&mut self.new_event_details)
+                        .hint_text("Enter event details"),
+                );
+            });
+            ui.with_layout(egui::Layout::left_to_right(egui::Align::TOP), |ui| {
+                ui.with_layout(egui::Layout::left_to_right(egui::Align::TOP), |ui| {
+                    ui.set_min_width(LABEL_WIDTH);
+                    ui.label("Date");
+                });
+                let date = self
+                    .new_event_date
+                    .get_or_insert_with(|| chrono::offset::Utc::now().date_naive());
+                ui.add(egui_extras::DatePickerButton::new(date));
+            });
+            ui.with_layout(egui::Layout::left_to_right(egui::Align::TOP), |ui| {
+                ui.with_layout(egui::Layout::left_to_right(egui::Align::TOP), |ui| {
+                    ui.set_min_width(LABEL_WIDTH);
+                    ui.label("Time");
                 });
                 ui.with_layout(egui::Layout::left_to_right(egui::Align::TOP), |ui| {
                     ui.with_layout(egui::Layout::left_to_right(egui::Align::TOP), |ui| {
                         ui.set_min_width(LABEL_WIDTH);
-                        ui.label("Details");
+                        ui.label("Hour");
+                        ui.add(egui::DragValue::new(&mut self.new_event_hour).speed(0.1));
                     });
-                    ui.add(
-                        egui::widgets::TextEdit::multiline(&mut self.new_event_details)
-                            .hint_text("Enter event details"),
-                    );
-                });
-                ui.with_layout(egui::Layout::left_to_right(egui::Align::TOP), |ui| {
                     ui.with_layout(egui::Layout::left_to_right(egui::Align::TOP), |ui| {
                         ui.set_min_width(LABEL_WIDTH);
-                        ui.label("Date");
+                        ui.label("Minute");
+                        ui.add(egui::DragValue::new(&mut self.new_event_minute).speed(0.1));
                     });
-                    let date = self
-                        .new_event_date
-                        .get_or_insert_with(|| chrono::offset::Utc::now().date_naive());
-                    ui.add(egui_extras::DatePickerButton::new(date));
-                });
-                ui.with_layout(egui::Layout::left_to_right(egui::Align::TOP), |ui| {
-                    ui.with_layout(egui::Layout::left_to_right(egui::Align::TOP), |ui| {
-                        ui.set_min_width(LABEL_WIDTH);
-                        ui.label("Time");
-                    });
-                    ui.with_layout(egui::Layout::left_to_right(egui::Align::TOP), |ui| {
-                        ui.with_layout(egui::Layout::left_to_right(egui::Align::TOP), |ui| {
-                            ui.set_min_width(LABEL_WIDTH);
-                            ui.label("Hour");
-                            ui.add(egui::DragValue::new(&mut self.new_event_hour).speed(0.1));
-                        });
-                        ui.with_layout(egui::Layout::left_to_right(egui::Align::TOP), |ui| {
-                            ui.set_min_width(LABEL_WIDTH);
-                            ui.label("Minute");
-                            ui.add(egui::DragValue::new(&mut self.new_event_minute).speed(0.1));
-                        });
-                        ui.horizontal(|ui| {
-                            ui.selectable_value(&mut self.new_event_am_pm, AmPm::Am, "AM");
-                            ui.selectable_value(&mut self.new_event_am_pm, AmPm::Pm, "PM");
-                        });
-                    });
-                });
-                ui.with_layout(egui::Layout::left_to_right(egui::Align::TOP), |ui| {
-                    ui.with_layout(egui::Layout::left_to_right(egui::Align::TOP), |ui| {
-                        ui.set_min_width(LABEL_WIDTH);
-                        ui.add(egui::Checkbox::new(&mut self.new_event_is_done, "Mark Done"));
-                    });
-                });
-                ui.with_layout(egui::Layout::left_to_right(egui::Align::TOP), |ui| {
-                    ui.set_max_width(330.0);
-                    ui.with_layout(egui::Layout::right_to_left(egui::Align::TOP), |ui| {
-                        if ui.button("Cancel").clicked() {
-                            KrabbyDoUi::handle_new_cancel_button_clicked(self);
-                        } else if ui.button("OK").clicked() {
-                            KrabbyDoUi::handle_new_ok_button_clicked(self);
-                        }
+                    ui.horizontal(|ui| {
+                        ui.selectable_value(&mut self.new_event_am_pm, AmPm::Am, "AM");
+                        ui.selectable_value(&mut self.new_event_am_pm, AmPm::Pm, "PM");
                     });
                 });
             });
-
+            ui.with_layout(egui::Layout::left_to_right(egui::Align::TOP), |ui| {
+                ui.with_layout(egui::Layout::left_to_right(egui::Align::TOP), |ui| {
+                    ui.set_min_width(LABEL_WIDTH);
+                    ui.add(egui::Checkbox::new(
+                        &mut self.new_event_is_done,
+                        "Mark Done",
+                    ));
+                });
+            });
+            ui.with_layout(egui::Layout::left_to_right(egui::Align::TOP), |ui| {
+                ui.set_max_width(330.0);
+                ui.with_layout(egui::Layout::right_to_left(egui::Align::TOP), |ui| {
+                    if ui.button("Cancel").clicked() {
+                        KrabbyDoUi::handle_new_cancel_button_clicked(self);
+                    } else if ui.button("OK").clicked() {
+                        KrabbyDoUi::handle_new_ok_button_clicked(self);
+                    }
+                });
+            });
+        });
     }
 }
 
 impl eframe::App for KrabbyDoUi {
-
     /// Called by the frame work to save state before shutdown.
     fn save(&mut self, storage: &mut dyn eframe::Storage) {
         eframe::set_value(storage, eframe::APP_KEY, self);
     }
 
     fn update(&mut self, ctx: &egui::Context, _frame: &mut eframe::Frame) {
-        // let Self {is_show_new_reminder_dialog} = self;
+        let Self { .. } = self;
 
         // Menu bar
         self.setup_menu_bar(ctx, _frame);
