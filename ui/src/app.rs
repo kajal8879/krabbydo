@@ -235,7 +235,7 @@ impl KrabbyDoUi {
     pub fn get_selected_date_time(&mut self) -> DateTime<Utc> {
         // Considering AM / PM
         let mut hour = self.new_event_hour;
-        if self.new_event_am_pm == AmPm::Pm {
+        if hour < 12 && self.new_event_am_pm == AmPm::Pm {
             hour += 12;
         }
         self.date_time = chrono::offset::Utc
