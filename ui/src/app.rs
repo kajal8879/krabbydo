@@ -68,6 +68,15 @@ pub struct KrabbyDoUi {
 
     #[serde(skip)]
     test_entries_completed: Vec<EventEntry>,
+
+    #[serde(skip)]
+    details_panel_title: String,
+
+    #[serde(skip)]
+    details_panel_details: String,
+
+    #[serde(skip)]
+    details_panel_time: String,
 }
 
 impl Default for KrabbyDoUi {
@@ -130,6 +139,9 @@ impl Default for KrabbyDoUi {
                     is_done: true,
                 },
             ],
+            details_panel_title: String::from("Krabby Do"),
+            details_panel_details: String::from(""),
+            details_panel_time: String::from(""),
         }
     }
 }
@@ -202,7 +214,7 @@ impl KrabbyDoUi {
                     ui.with_layout(egui::Layout::top_down(egui::Align::TOP), |ui| {
                         ui.with_layout(egui::Layout::top_down(egui::Align::TOP), |ui| {
                             if ui.button(entry.title.clone()).clicked() {
-                                KrabbyDoUi::handle_event_list_item_clicked(&entry);
+                                KrabbyDoUi::handle_event_list_item_clicked(self, &entry);
                             }
                         });
                     });
@@ -211,11 +223,17 @@ impl KrabbyDoUi {
         });
         
     }
-    pub fn handle_event_list_item_clicked(entry: &EventEntry) {
+    pub fn handle_event_list_item_clicked(&mut self, entry: &EventEntry) {
         println!("Event Title: {}", entry.title);
         println!("Event Details: {}", entry.details);
         println!("Event Date and Time: {}", entry.date_time);
         println!("Is Done: {}", entry.is_done);
+
+        self.details_panel_title = entry.title.clone();
+        self.details_panel_details = entry.details.clone();
+        
+        // https://docs.rs/chrono/0.4.24/chrono/format/strftime/index.html
+        self.details_panel_time = format!("{}", entry.date_time.format("Date: %A, %B %e, %Y \tTime: %l:%M %p"));
     }
 }
 
@@ -292,7 +310,17 @@ impl eframe::App for KrabbyDoUi {
         });
 
         egui::CentralPanel::default().show(ctx, |ui| {
-            ui.heading("Krabby Do");
+            ui.style_mut().spacing.item_spacing.y = 30.0;
+            ui.heading(self.details_panel_title.clone());
+            ui.with_layout(egui::Layout::left_to_right(egui::Align::TOP), |ui| {
+                ui.set_min_width(200.0);
+                ui.add(egui::Label::new(self.details_panel_details.clone()).wrap(true));
+
+            });
+            ui.with_layout(egui::Layout::left_to_right(egui::Align::TOP), |ui| {
+                ui.add(egui::Label::new(self.details_panel_time.clone()).wrap(true));
+
+            });
         });
 
         if self.is_show_new_reminder_dialog {
