@@ -1,0 +1,10 @@
+[package]
+name = "middleware"
+version = "0.1.0"
+authors = ["Kajal Patil <kajal@pdx.edu>"]
+edition = "2021"
+
+[dependencies]
+mongodb = "2.0"
+tokio = { version = "1", features = ["full"] }
+chrono = "0.4.24"
