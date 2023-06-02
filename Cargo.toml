@@ -2,5 +2,6 @@
 members = [
     "ui",
     "middleware",
+    "notification",
     ]
     
