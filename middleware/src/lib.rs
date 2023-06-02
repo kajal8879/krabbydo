@@ -1,6 +1,6 @@
 use chrono::{DateTime, Utc};
-use mongodb::{Client, options::ClientOptions};
-use mongodb::bson::{doc};
+use mongodb::bson::doc;
+use mongodb::{options::ClientOptions, Client};
 use tokio::runtime::Runtime;
 
 /// Struct to store event data
@@ -14,14 +14,20 @@ pub struct EventEntry {
 }
 
 impl EventEntry {
-    pub fn new(unique_id: String, title: String, details: String, date_time: DateTime<Utc>, is_done: bool) -> Self {
+    pub fn new(
+        unique_id: String,
+        title: String,
+        details: String,
+        date_time: DateTime<Utc>,
+        is_done: bool,
+    ) -> Self {
         EventEntry {
             unique_id,
             title,
             details,
             date_time,
             is_done,
-        }   
+        }
     }
 
     pub async fn add_event(&self, client: Client) -> Result<(), Box<dyn std::error::Error>> {
@@ -66,11 +72,17 @@ fn test_add_task() {
     let reminder_time = Utc::now();
     let is_completed = false;
 
-    let event_entry = EventEntry::new(String::from(""), task_name, task_desc, reminder_time, is_completed);
+    let event_entry = EventEntry::new(
+        String::from(""),
+        task_name,
+        task_desc,
+        reminder_time,
+        is_completed,
+    );
     let rt = Runtime::new().unwrap();
 
-     // Run the add_task function asynchronously
-     let result = rt.block_on(async {
+    // Run the add_task function asynchronously
+    let result = rt.block_on(async {
         let client = create_mongodb_client().await?;
         event_entry.add_event(client).await
     });

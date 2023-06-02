@@ -159,7 +159,7 @@ impl KrabbyDoUi {
         }
         Default::default()
     }
-    
+
     /// Handle New Event menu option clicked;
     /// 1. Show New Event dialog
     /// 2. Load current time hours and minutes into their corresponding fields in dialog
