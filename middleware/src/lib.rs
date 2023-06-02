@@ -3,34 +3,39 @@ use mongodb::{Client, options::ClientOptions};
 use mongodb::bson::{doc};
 use tokio::runtime::Runtime;
 
+/// Struct to store event data
 #[derive(Debug, Clone)]
-pub struct ToDo {
-    pub task_name: String,
-    pub task_desc: String,
-    pub reminder_time: DateTime<Utc>,
+pub struct EventEntry {
+    pub unique_id: String,
+    pub title: String,
+    pub details: String,
+    pub date_time: DateTime<Utc>,
+    pub is_done: bool,
 }
 
-impl ToDo {
-    pub fn new(task_name: String, task_desc: String, reminder_time: DateTime<Utc>) -> Self {
-        ToDo {
-            task_name,
-            task_desc,
-            reminder_time,
-        }
+impl EventEntry {
+    pub fn new(unique_id: String, title: String, details: String, date_time: DateTime<Utc>, is_done: bool) -> Self {
+        EventEntry {
+            unique_id,
+            title,
+            details,
+            date_time,
+            is_done,
+        }   
     }
 
-    pub async fn add_task(&self, client: Client) -> Result<(), Box<dyn std::error::Error>> {
-        println!("task added to MongoDB");
+    pub async fn add_event(&self, client: Client) -> Result<(), Box<dyn std::error::Error>> {
+        println!("Event added to MongoDB");
 
         // Get a handle to the "todos" collection in the "tasks" database
-        let db = client.database("tasks");
+        let db = client.database("events");
         let collection = db.collection("todos");
 
         // Create a document representing the ToDo task
         let document = doc! {
-            "task_name": self.task_name.clone(),
-            "task_desc": self.task_desc.clone(),
-            "reminder_time": self.reminder_time.to_rfc3339(),
+            "title": self.title.clone(),
+            "details": self.details.clone(),
+            "date_time": self.date_time.to_rfc3339(),
         };
 
         // Insert the document into the collection
@@ -40,15 +45,15 @@ impl ToDo {
     }
 
     pub fn update_task(&self) {
-        println!("task updated !")
+        println!("Event Updated !")
     }
 
     pub fn delete_or_mark_completed(&self) {
-        println!("task Completed !")
+        println!("Event Completed !")
     }
 }
 
-async fn create_mongodb_client() -> Result<Client, Box<dyn std::error::Error>> {
+pub async fn create_mongodb_client() -> Result<Client, Box<dyn std::error::Error>> {
     let client_options = ClientOptions::parse("mongodb://localhost:27017").await?;
     let client = Client::with_options(client_options)?;
     Ok(client)
@@ -56,19 +61,20 @@ async fn create_mongodb_client() -> Result<Client, Box<dyn std::error::Error>> {
 
 #[test]
 fn test_add_task() {
-    let task_name = String::from("KrabbyDonew setup");
+    let task_name = String::from("KrabbyDo new setup");
     let task_desc = String::from("First input Done! Mongo Setup successful");
     let reminder_time = Utc::now();
+    let is_completed = false;
 
-    let todo = ToDo::new(task_name, task_desc, reminder_time);
+    let event_entry = EventEntry::new(String::from(""), task_name, task_desc, reminder_time, is_completed);
     let rt = Runtime::new().unwrap();
 
      // Run the add_task function asynchronously
      let result = rt.block_on(async {
         let client = create_mongodb_client().await?;
-        todo.add_task(client).await
+        event_entry.add_event(client).await
     });
 
     // Assert that the add_task function succeeded
-    assert!(result.is_ok(), "add_task failed");
+    assert!(result.is_ok(), "add_event failed");
 }
