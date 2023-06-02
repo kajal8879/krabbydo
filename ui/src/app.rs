@@ -4,31 +4,10 @@ use chrono::Datelike;
 use chrono::NaiveDate;
 use chrono::Timelike;
 use egui::{ScrollArea, Ui};
+use middleware::EventEntry;
 
 // egui template sourced from:
 // https://github.com/emilk/eframe_template
-
-/// Struct to store event data
-pub struct EventEntry {
-    title: String,
-    details: String,
-    date_time: DateTime<Utc>,
-    is_done: bool,
-}
-
-/// Implementation of Clone trait for EventEntry struct
-impl Clone for EventEntry {
-    // https://levelup.gitconnected.com/rust-cloning-structs-explained-d633713d5de0
-    /// Clone function implementation for EventEntry struct
-    fn clone(&self) -> Self {
-        EventEntry {
-            title: self.title.clone(),
-            details: self.details.clone(),
-            date_time: self.date_time,
-            is_done: self.is_done,
-        }
-    }
-}
 
 #[derive(Debug, PartialEq, serde::Deserialize, serde::Serialize)]
 /// Enum to allow a user to specify AM or PM while choosing a time for an event
@@ -114,24 +93,28 @@ impl Default for KrabbyDoUi {
             test_entries: // https://doc.rust-lang.org/std/vec/struct.Vec.html
                 vec![
                     EventEntry {
+                    unique_id: String::from(""),
                     title: String::from("Alpha"),
                     details: String::from("Alpha - Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum"),
                     date_time: Utc.with_ymd_and_hms(2023, 5, 14, 22, 2, 0).unwrap(),
                     is_done: false,
                 },
                 EventEntry {
+                    unique_id: String::from(""),
                     title: String::from("Bravo"),
                     details: String::from("Bravo - Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum"),
                     date_time: Utc.with_ymd_and_hms(2022, 5, 14, 22, 2, 0).unwrap(),
                     is_done: false,
                 },
                 EventEntry {
+                    unique_id: String::from(""),
                     title: String::from("Charlie"),
                     details: String::from("Charlie - Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum"),
                     date_time: Utc.with_ymd_and_hms(2021, 5, 14, 22, 2, 0).unwrap(),
                     is_done: false,
                 },
                 EventEntry {
+                    unique_id: String::from(""),
                     title: String::from("Delta"),
                     details: String::from("Delta - Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum"),
                     date_time: Utc.with_ymd_and_hms(2020, 5, 14, 22, 2, 0).unwrap(),
@@ -140,18 +123,21 @@ impl Default for KrabbyDoUi {
             ],
             test_entries_completed: vec![
                 EventEntry {
-                title: String::from("Echo"),
-                details: String::from("Echo details"),
-                date_time: Utc.with_ymd_and_hms(2019, 5, 14, 22, 2, 0).unwrap(),
-                is_done: true,
+                    unique_id: String::from(""),
+                    title: String::from("Echo"),
+                    details: String::from("Echo details"),
+                    date_time: Utc.with_ymd_and_hms(2019, 5, 14, 22, 2, 0).unwrap(),
+                    is_done: true,
                 },
                 EventEntry {
+                    unique_id: String::from(""),
                     title: String::from("Foxtrot"),
                     details: String::from("Foxtrot details"),
                     date_time: Utc.with_ymd_and_hms(2018, 5, 14, 22, 2, 0).unwrap(),
                     is_done: true,
                 },
                 EventEntry {
+                    unique_id: String::from(""),
                     title: String::from("Golf"),
                     details: String::from("Golf details"),
                     date_time: Utc.with_ymd_and_hms(2017, 5, 14, 22, 2, 0).unwrap(),
@@ -203,6 +189,7 @@ impl KrabbyDoUi {
         println!("Date Time: {}", self.get_selected_date_time());
         println!("Is Done: {}", self.new_event_is_done);
         let new_entry = EventEntry {
+            unique_id: String::from(""),
             title: self.new_event_title.clone(),
             details: self.new_event_details.clone(),
             date_time: self.get_selected_date_time(),
@@ -468,10 +455,10 @@ impl eframe::App for KrabbyDoUi {
     fn update(&mut self, ctx: &egui::Context, _frame: &mut eframe::Frame) {
         let Self { .. } = self;
 
-        // Menu bar
+        // Menu Bar
         self.setup_menu_bar(ctx, _frame);
 
-        // Left panel
+        // Left Panel
         self.setup_left_panel(ctx);
 
         // Right Panel
