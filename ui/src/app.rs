@@ -9,79 +9,73 @@ use middleware::EventEntry;
 // egui template sourced from:
 // https://github.com/emilk/eframe_template
 
-#[derive(Debug, PartialEq, serde::Deserialize, serde::Serialize)]
 /// Enum to allow a user to specify AM or PM while choosing a time for an event
+#[derive(PartialEq)]
 enum AmPm {
     Am,
     Pm,
 }
 
-/// We derive Deserialize/Serialize so we can persist app state on shutdown.
-#[derive(serde::Deserialize, serde::Serialize)]
-#[serde(default)] // if we add new fields, give them default values when deserializing old state
 /// Struct to store UI components of Krabby Do
 pub struct KrabbyDoUi {
-    /// To control the display of New Event dialog
-    #[serde(skip)]
-    is_show_new_reminder_dialog: bool,
+    /// To control the display of New / Edit Event dialog
+    is_show_new_edit_dialog: bool,
 
-    /// To store the value of Title field in New Event dialog
-    #[serde(skip)]
+    /// To control the display of Edit Event button
+    is_show_edit_event_button: bool,
+
+    /// To store the value of Title field in New / Edit Event dialog
     new_event_title: String,
 
-    /// To store the value of Details field in New Event dialog
-    #[serde(skip)]
+    /// To store the value of Details field in New / Edit Event dialog
     new_event_details: String,
 
-    /// To store the value of Title field in New Event dialog
-    #[serde(skip)]
+    /// To store the value of Date field in New / Edit Event dialog
     new_event_date: Option<NaiveDate>,
 
-    /// To store the value of Hour field in New Event dialog
-    #[serde(skip)]
+    /// To store the value of Hour field in New / Edit Event dialog
     new_event_hour: u32,
 
-    /// To store the value of Minute field in New Event dialog
-    #[serde(skip)]
+    /// To store the value of Minute field in New / Edit Event dialog
     new_event_minute: u32,
 
-    /// To store the user's choice among AM and PM options in New Event dialog
+    /// To store the user's choice among AM and PM options in New / Edit Event dialog
     new_event_am_pm: AmPm,
 
-    /// To specify if an event is done or not in New Event dialog
-    #[serde(skip)]
+    /// To specify if an event is done or not in New / Edit Event dialog
     new_event_is_done: bool,
 
     /// To store the value of date and time in a unified format
-    #[serde(skip)]
     date_time: DateTime<Utc>,
 
     /// Vector of test entries
-    #[serde(skip)]
     test_entries: Vec<EventEntry>,
 
     /// Vector of test entries marked done
-    #[serde(skip)]
     test_entries_completed: Vec<EventEntry>,
 
     /// To hold the value for Title to be displayed in the event details panel
-    #[serde(skip)]
     details_panel_title: String,
 
     /// To hold the value for Details to be displayed in the event details panel
-    #[serde(skip)]
     details_panel_details: String,
 
     /// To hold the value for date and time to be displayed in the event details panel
-    #[serde(skip)]
     details_panel_time: String,
+
+    /// To hold the currently selected event entry for editing purpose
+    active_entry: EventEntry,
+
+    /// To set title of the new/edit dialog as per current use
+    new_edit_title: String,
 }
 
 impl Default for KrabbyDoUi {
     /// Assign default values to struct properties
     fn default() -> Self {
         Self {
-            is_show_new_reminder_dialog: false,
+            is_show_new_edit_dialog: false,
+            is_show_edit_event_button: false,
             new_event_title: "".to_owned(),
             new_event_details: "".to_owned(),
             new_event_is_done: false,
@@ -147,24 +141,36 @@ impl Default for KrabbyDoUi {
             details_panel_title: String::from("Krabby Do"),
             details_panel_details: String::from(""),
             details_panel_time: String::from(""),
+            active_entry: EventEntry {
+                unique_id: String::from(""),
+                title: String::from(""),
+                details: String::from(""),
+                date_time: Utc.with_ymd_and_hms(2000, 1, 1, 1, 1, 1).unwrap(),
+                is_done: false,
+            },
+            new_edit_title: String::from("New Event"),
         }
     }
 }
 
 impl KrabbyDoUi {
     /// New function to set up the UI
-    pub fn new(cc: &eframe::CreationContext<'_>) -> Self {
-        if let Some(storage) = cc.storage {
-            return eframe::get_value(storage, eframe::APP_KEY).unwrap_or_default();
-        }
+    pub fn new() -> Self {
         Default::default()
     }
 
     /// Handle New Event menu option clicked;
-    /// 1. Show New Event dialog
+    /// 1. Show New / Edit Event dialog
     /// 2. Load current time hours and minutes into their corresponding fields in dialog
     pub fn handle_menu_new_clicked(&mut self) {
-        self.is_show_new_reminder_dialog = true;
+        self.new_edit_title = String::from("New Event");
+        self.is_show_new_edit_dialog = true;
+        self.new_event_title = String::from("");
+        self.new_event_details = String::from("");
+
+        let now = Local::now();
+        self.new_event_date = NaiveDate::from_ymd_opt(now.year(), now.month(), now.day());
+
         self.new_event_am_pm = AmPm::Am;
         let mut hour = Local::now().time().hour();
         if hour > 11 {
@@ -176,18 +182,16 @@ impl KrabbyDoUi {
         self.new_event_hour = hour;
         let minute = Local::now().time().minute();
         self.new_event_minute = minute;
+
+        self.new_event_is_done = false;
     }
 
-    /// Handle OK button clicked of the New Event dialog;
+    /// Handle OK button clicked of the New/Edit Event dialog;
     /// 1. Dump data of new event to log
     /// 2. Create a new event entry struct and populate it with the added data
     /// 3. Add the created struct to upcoming entries or marked-done entries as per user's choice
-    pub fn handle_new_ok_button_clicked(&mut self) {
-        println!("Event Title: {}", self.new_event_title);
-        println!("Event Details: {}", self.new_event_details);
-        self.is_show_new_reminder_dialog = false;
-        println!("Date Time: {}", self.get_selected_date_time());
-        println!("Is Done: {}", self.new_event_is_done);
+    pub fn handle_new_edit_ok_button_clicked(&mut self) {
+        self.is_show_new_edit_dialog = false;
         let new_entry = EventEntry {
             unique_id: String::from(""),
             title: self.new_event_title.clone(),
@@ -195,28 +199,36 @@ impl KrabbyDoUi {
             date_time: self.get_selected_date_time(),
             is_done: self.new_event_is_done,
         };
-        if self.new_event_is_done {
-            self.test_entries_completed.push(new_entry);
-        } else {
-            self.test_entries.push(new_entry);
+        println!("{:?}", new_entry);
+        if self.new_edit_title == "New Event" {
+            if self.new_event_is_done {
+                self.test_entries_completed.push(new_entry);
+            } else {
+                self.test_entries.push(new_entry);
+            }
+        } else if self.new_edit_title == "Edit Event" {
+            println!("\nEntry edit requested!\n");
         }
     }
 
-    /// Handle Cancel button clicked of the New Event dialog; close the dialog
-    pub fn handle_new_cancel_button_clicked(&mut self) {
-        self.is_show_new_reminder_dialog = false;
+    /// Handle Cancel button clicked of the New / Edit Event dialog; close the dialog
+    pub fn handle_new_edit_cancel_button_clicked(&mut self) {
+        self.is_show_new_edit_dialog = false;
     }
 
     /// Handle event list item clicked.; on clicking the event, display the event details in the central panel
     pub fn handle_event_list_item_clicked(&mut self, entry: &EventEntry) {
-        println!("Event Title: {}", entry.title);
-        println!("Event Details: {}", entry.details);
-        println!("Event Date and Time: {}", entry.date_time);
-        println!("Is Done: {}", entry.is_done);
+        // Currently clicked item is made ready to be loaded into Edit Dialog
+        self.active_entry = entry.clone();
 
+        // Edit Event button is made visible
+        self.is_show_edit_event_button = true;
+
+        // Event data shown in the central panel
         self.details_panel_title = entry.title.clone();
         self.details_panel_details = entry.details.clone();
 
+        // Event date time is displayed in the central panel
         // https://docs.rs/chrono/0.4.24/chrono/format/strftime/index.html
         self.details_panel_time = format!(
             "{}",
@@ -224,6 +236,39 @@ impl KrabbyDoUi {
                 .date_time
                 .format("Date: %A, %B %e, %Y \tTime: %l:%M %p")
         );
+
+        println!("{:?}", entry);
+    }
+
+    /// Handle Edit Event button clicked
+    pub fn handle_edit_event_button_clicked(&mut self) {
+        println!("\nEdit Event button clicked!\n");
+        self.new_edit_title = String::from("Edit Event");
+        self.is_show_new_edit_dialog = true;
+
+        // Fetching string values to be displayed in Edit Dialog
+        self.new_event_title = self.active_entry.title.clone();
+        self.new_event_details = self.active_entry.details.clone();
+
+        // Fetching date time of currently active event for editing
+        let date_time = self.active_entry.date_time;
+
+        // Fetching date values to be displayed in Edit Dialog
+        self.new_event_date =
+            NaiveDate::from_ymd_opt(date_time.year(), date_time.month(), date_time.day());
+
+        // Fetching time values to be displayed in Edit Dialog
+        if date_time.hour() > 11 {
+            self.new_event_am_pm = AmPm::Pm;
+        } else {
+            self.new_event_am_pm = AmPm::Am;
+        }
+        if date_time.hour() > 12 {
+            self.new_event_hour = date_time.hour() - 12;
+        }
+        self.new_event_minute = date_time.minute();
+
+        self.new_event_is_done = self.active_entry.is_done;
     }
 
     /// Get the date selected by the date picker widget in NaiveDate format wrapped in Option
@@ -347,7 +392,14 @@ impl KrabbyDoUi {
     pub fn setup_central_panel(&mut self, ctx: &egui::Context) {
         egui::CentralPanel::default().show(ctx, |ui| {
             ui.style_mut().spacing.item_spacing.y = 30.0;
-            ui.heading(self.details_panel_title.clone());
+            ui.with_layout(egui::Layout::left_to_right(egui::Align::TOP), |ui| {
+                ui.heading(self.details_panel_title.clone());
+                if self.is_show_edit_event_button {
+                    if ui.button("Edit Event").clicked() {
+                        KrabbyDoUi::handle_edit_event_button_clicked(self);
+                    }
+                }
+            });
             ui.separator();
             ui.with_layout(egui::Layout::left_to_right(egui::Align::TOP), |ui| {
                 ui.set_min_width(200.0);
@@ -361,7 +413,7 @@ impl KrabbyDoUi {
         });
     }
 
-    /// Set up New Event dialog
+    /// Set up New / Edit Event dialog
     pub fn setup_new_event_dialog(&mut self, ctx: &egui::Context) {
         const LABEL_WIDTH: f32 = 50.0;
         const Y_SPACING: f32 = 10.0;
@@ -369,7 +421,7 @@ impl KrabbyDoUi {
         self.new_event_hour = self.new_event_hour.clamp(1, 12);
         self.new_event_minute = self.new_event_minute.clamp(0, 60);
 
-        egui::Window::new("New Event").show(ctx, |ui| {
+        egui::Window::new(self.new_edit_title.clone()).show(ctx, |ui| {
             ui.style_mut().spacing.item_spacing.y = Y_SPACING;
             ui.with_layout(egui::Layout::left_to_right(egui::Align::TOP), |ui| {
                 ui.with_layout(egui::Layout::left_to_right(egui::Align::TOP), |ui| {
@@ -436,9 +488,9 @@ impl KrabbyDoUi {
                 ui.set_max_width(330.0);
                 ui.with_layout(egui::Layout::right_to_left(egui::Align::TOP), |ui| {
                     if ui.button("Cancel").clicked() {
-                        KrabbyDoUi::handle_new_cancel_button_clicked(self);
+                        KrabbyDoUi::handle_new_edit_cancel_button_clicked(self);
                     } else if ui.button("OK").clicked() {
-                        KrabbyDoUi::handle_new_ok_button_clicked(self);
+                        KrabbyDoUi::handle_new_edit_ok_button_clicked(self);
                     }
                 });
             });
@@ -447,11 +499,7 @@ impl KrabbyDoUi {
 }
 
 impl eframe::App for KrabbyDoUi {
-    /// Called by the frame work to save state before shutdown.
-    fn save(&mut self, storage: &mut dyn eframe::Storage) {
-        eframe::set_value(storage, eframe::APP_KEY, self);
-    }
-
+    /// Update the state of UI (Redraw UI)
     fn update(&mut self, ctx: &egui::Context, _frame: &mut eframe::Frame) {
         let Self { .. } = self;
 
@@ -467,8 +515,8 @@ impl eframe::App for KrabbyDoUi {
         // Central Panel
         self.setup_central_panel(ctx);
 
-        if self.is_show_new_reminder_dialog {
-            // New Event dialog
+        if self.is_show_new_edit_dialog {
+            // New / Edit Event dialog
             self.setup_new_event_dialog(ctx);
         }
     }
