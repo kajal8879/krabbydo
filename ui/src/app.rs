@@ -334,7 +334,7 @@ impl KrabbyDoUi {
     }
 
     /// Set up menu bar
-    pub fn setup_menu_bar(&mut self, ctx: &egui::Context, _frame: &mut eframe::Frame) {
+    pub fn setup_menu_bar(&mut self, ctx: &egui::Context, frame: &mut eframe::Frame) {
         egui::TopBottomPanel::top("menu_panel").show(ctx, |ui| {
             egui::menu::bar(ui, |ui| {
                 ui.menu_button("File", |ui| {
@@ -342,7 +342,7 @@ impl KrabbyDoUi {
                         KrabbyDoUi::handle_menu_new_clicked(self);
                     }
                     if ui.button("Quit").clicked() {
-                        _frame.close();
+                        frame.close();
                     }
                 });
             });
@@ -516,11 +516,11 @@ impl KrabbyDoUi {
 
 impl eframe::App for KrabbyDoUi {
     /// Update the state of UI (Redraw UI)
-    fn update(&mut self, ctx: &egui::Context, _frame: &mut eframe::Frame) {
+    fn update(&mut self, ctx: &egui::Context, frame: &mut eframe::Frame) {
         let Self { .. } = self;
 
         // Menu Bar
-        self.setup_menu_bar(ctx, _frame);
+        self.setup_menu_bar(ctx, frame);
 
         // Left Panel
         self.setup_left_panel(ctx);
