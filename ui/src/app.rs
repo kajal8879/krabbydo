@@ -3,8 +3,14 @@ use chrono::DateTime;
 use chrono::Datelike;
 use chrono::NaiveDate;
 use chrono::Timelike;
-use egui::{ScrollArea, Ui};
+use egui::{Layout, ScrollArea, Ui};
 use middleware::EventEntry;
+
+// https://stackoverflow.com/questions/48071513/how-to-use-one-module-from-another-module-in-a-rust-cargo-project
+// GUI elements' dimension values segregated in a different file for ease of modification
+#[path = "style.rs"]
+mod style;
+use style::style_constants;
 
 // egui template sourced from:
 // https://github.com/emilk/eframe_template
@@ -22,7 +28,7 @@ pub struct KrabbyDoUi {
     is_show_new_edit_dialog: bool,
 
     /// To control the display of Edit Event button
-    is_show_edit_event_button: bool,
+    is_show_central_panel_context_elements: bool,
 
     /// To store the value of Title field in New / Edit Event dialog
     new_event_title: String,
@@ -75,7 +81,7 @@ impl Default for KrabbyDoUi {
     fn default() -> Self {
         Self {
             is_show_new_edit_dialog: false,
-            is_show_edit_event_button: false,
+            is_show_central_panel_context_elements: false,
             new_event_title: "".to_owned(),
             new_event_details: "".to_owned(),
             new_event_is_done: false,
@@ -178,6 +184,9 @@ impl KrabbyDoUi {
         }
         if hour > 12 {
             hour -= 12;
+        } else if hour == 0 {
+            hour = 12;
+            self.new_event_am_pm = AmPm::Am;
         }
         self.new_event_hour = hour;
         let minute = Local::now().time().minute();
@@ -222,7 +231,7 @@ impl KrabbyDoUi {
         self.active_entry = entry.clone();
 
         // Edit Event button is made visible
-        self.is_show_edit_event_button = true;
+        self.is_show_central_panel_context_elements = true;
 
         // Event data shown in the central panel
         self.details_panel_title = entry.title.clone();
@@ -283,6 +292,8 @@ impl KrabbyDoUi {
         let mut hour = self.new_event_hour;
         if hour < 12 && self.new_event_am_pm == AmPm::Pm {
             hour += 12;
+        } else if hour == 12 && self.new_event_am_pm == AmPm::Am {
+            hour -= 12;
         }
         self.date_time = chrono::offset::Utc
             .with_ymd_and_hms(
@@ -302,13 +313,19 @@ impl KrabbyDoUi {
         ui.push_id(widget_id, |ui| {
             ScrollArea::vertical().show(ui, |ui| {
                 for entry in entries {
-                    ui.set_min_width(140.0);
-                    ui.style_mut().spacing.item_spacing.y = 30.0;
+                    ui.style_mut().spacing.item_spacing.y =
+                        style_constants::EVENT_LIST_BUTTON_SPACING;
                     ui.with_layout(egui::Layout::top_down(egui::Align::TOP), |ui| {
                         ui.with_layout(egui::Layout::top_down(egui::Align::TOP), |ui| {
-                            if ui.button(entry.title.clone()).clicked() {
-                                KrabbyDoUi::handle_event_list_item_clicked(self, &entry);
-                            }
+                            ui.set_max_height(style_constants::EVENT_LIST_BUTTON_MAX_HEIGHT);
+                            ui.with_layout(
+                                Layout::centered_and_justified(egui::Direction::LeftToRight),
+                                |ui| {
+                                    if ui.button(entry.title.clone()).clicked() {
+                                        KrabbyDoUi::handle_event_list_item_clicked(self, &entry);
+                                    }
+                                },
+                            );
                         });
                     });
                 }
@@ -335,28 +352,25 @@ impl KrabbyDoUi {
     /// Set up Left Panel that contains New Event button, Upcoming Events list and authors
     pub fn setup_left_panel(&mut self, ctx: &egui::Context) {
         egui::SidePanel::left("left_side_panel").show(ctx, |ui| {
-            ui.style_mut().spacing.item_spacing.y = 10.0;
-            ui.with_layout(egui::Layout::left_to_right(egui::Align::TOP), |ui| {
-                ui.with_layout(egui::Layout::left_to_right(egui::Align::TOP), |ui| {
-                    ui.set_min_width(10.0);
-                });
-            });
+            ui.style_mut().spacing.item_spacing.y = style_constants::LEFT_PANEL_VERTICAL_SPACING;
+            ui.with_layout(egui::Layout::left_to_right(egui::Align::TOP), |_ui| {});
 
             ui.with_layout(egui::Layout::left_to_right(egui::Align::TOP), |ui| {
                 ui.with_layout(egui::Layout::left_to_right(egui::Align::TOP), |ui| {
-                    if ui.button("New Event").clicked() {
-                        KrabbyDoUi::handle_menu_new_clicked(self);
-                    }
+                    ui.set_max_height(style_constants::NEW_EVENT_BUTTON_MAX_HEIGHT);
+                    ui.with_layout(
+                        Layout::centered_and_justified(egui::Direction::LeftToRight),
+                        |ui| {
+                            if ui.button("New Event").clicked() {
+                                KrabbyDoUi::handle_menu_new_clicked(self);
+                            }
+                        },
+                    );
                 });
             });
             ui.separator();
             ui.heading("Upcoming Events");
-            ui.style_mut().spacing.item_spacing.y = 5.0;
-            ui.with_layout(egui::Layout::left_to_right(egui::Align::TOP), |ui| {
-                ui.with_layout(egui::Layout::left_to_right(egui::Align::TOP), |ui| {
-                    ui.set_min_width(10.0);
-                });
-            });
+            ui.with_layout(egui::Layout::left_to_right(egui::Align::TOP), |_ui| {});
             self.list_events(ui, 123456, self.test_entries.clone());
             ui.separator();
             ui.with_layout(egui::Layout::bottom_up(egui::Align::LEFT), |ui| {
@@ -370,19 +384,10 @@ impl KrabbyDoUi {
     /// Set up Right Panel that contains list of events marked done
     pub fn setup_right_panel(&mut self, ctx: &egui::Context) {
         egui::SidePanel::right("right_side_panel").show(ctx, |ui| {
-            ui.style_mut().spacing.item_spacing.y = 10.0;
-            ui.with_layout(egui::Layout::left_to_right(egui::Align::TOP), |ui| {
-                ui.with_layout(egui::Layout::left_to_right(egui::Align::TOP), |ui| {
-                    ui.set_min_width(10.0);
-                });
-            });
+            ui.style_mut().spacing.item_spacing.y = style_constants::RIGHT_PANEL_VERTICAL_SPACING;
+            ui.with_layout(egui::Layout::left_to_right(egui::Align::TOP), |_ui| {});
             ui.heading("Marked Done");
-            ui.style_mut().spacing.item_spacing.y = 5.0;
-            ui.with_layout(egui::Layout::left_to_right(egui::Align::TOP), |ui| {
-                ui.with_layout(egui::Layout::left_to_right(egui::Align::TOP), |ui| {
-                    ui.set_min_width(10.0);
-                });
-            });
+            ui.with_layout(egui::Layout::left_to_right(egui::Align::TOP), |_ui| {});
             self.list_events(ui, 123457, self.test_entries_completed.clone());
             ui.separator();
         });
@@ -391,41 +396,54 @@ impl KrabbyDoUi {
     /// Set up central panel to display event details of the currently selected event
     pub fn setup_central_panel(&mut self, ctx: &egui::Context) {
         egui::CentralPanel::default().show(ctx, |ui| {
-            ui.style_mut().spacing.item_spacing.y = 30.0;
+            ui.style_mut().spacing.item_spacing.y = style_constants::CENTRAL_PANEL_VERTICAL_SPACING;
             ui.with_layout(egui::Layout::left_to_right(egui::Align::TOP), |ui| {
-                ui.heading(self.details_panel_title.clone());
-                if self.is_show_edit_event_button {
-                    if ui.button("Edit Event").clicked() {
-                        KrabbyDoUi::handle_edit_event_button_clicked(self);
-                    }
-                }
+                ui.with_layout(egui::Layout::left_to_right(egui::Align::TOP), |ui| {
+                    ui.set_max_height(style_constants::CENTRAL_PANEL_TITLE_MAX_HEIGHT);
+                    ui.with_layout(
+                        Layout::centered_and_justified(egui::Direction::LeftToRight),
+                        |ui| {
+                            ui.heading(self.details_panel_title.clone());
+                        },
+                    );
+                });
             });
-            ui.separator();
-            ui.with_layout(egui::Layout::left_to_right(egui::Align::TOP), |ui| {
-                ui.set_min_width(200.0);
-                ui.add(egui::Label::new(self.details_panel_details.clone()).wrap(true));
-            });
-            ui.separator();
-            ui.with_layout(egui::Layout::left_to_right(egui::Align::TOP), |ui| {
-                ui.add(egui::Label::new(self.details_panel_time.clone()).wrap(true));
-            });
-            ui.separator();
+            if self.is_show_central_panel_context_elements {
+                ui.with_layout(egui::Layout::left_to_right(egui::Align::TOP), |ui| {
+                    ui.set_min_width(style_constants::DETAILS_PANEL_MINIMUM_WIDTH);
+                    ui.add(egui::Label::new(self.details_panel_details.clone()).wrap(true));
+                });
+                ui.separator();
+                ui.with_layout(egui::Layout::left_to_right(egui::Align::TOP), |ui| {
+                    ui.add(egui::Label::new(self.details_panel_time.clone()).wrap(true));
+                });
+                ui.separator();
+                ui.with_layout(egui::Layout::left_to_right(egui::Align::TOP), |ui| {
+                    ui.set_max_height(style_constants::EDIT_EVENT_BUTTON_MAX_HEIGHT);
+                    ui.with_layout(
+                        Layout::centered_and_justified(egui::Direction::LeftToRight),
+                        |ui| {
+                            if ui.button("Edit Event").clicked() {
+                                KrabbyDoUi::handle_edit_event_button_clicked(self);
+                            }
+                        },
+                    );
+                });
+            }
         });
     }
 
     /// Set up New / Edit Event dialog
     pub fn setup_new_event_dialog(&mut self, ctx: &egui::Context) {
-        const LABEL_WIDTH: f32 = 50.0;
-        const Y_SPACING: f32 = 10.0;
-
         self.new_event_hour = self.new_event_hour.clamp(1, 12);
         self.new_event_minute = self.new_event_minute.clamp(0, 60);
 
         egui::Window::new(self.new_edit_title.clone()).show(ctx, |ui| {
-            ui.style_mut().spacing.item_spacing.y = Y_SPACING;
+            ui.style_mut().spacing.item_spacing.y =
+                style_constants::NEW_EDIT_DIALOG_VERTICAL_SPACING;
             ui.with_layout(egui::Layout::left_to_right(egui::Align::TOP), |ui| {
                 ui.with_layout(egui::Layout::left_to_right(egui::Align::TOP), |ui| {
-                    ui.set_min_width(LABEL_WIDTH);
+                    ui.set_min_width(style_constants::NEW_EDIT_DIALOG_MIN_LABEL_WIDTH);
                     ui.label("Title");
                 });
                 ui.add(
@@ -435,7 +453,7 @@ impl KrabbyDoUi {
             });
             ui.with_layout(egui::Layout::left_to_right(egui::Align::TOP), |ui| {
                 ui.with_layout(egui::Layout::left_to_right(egui::Align::TOP), |ui| {
-                    ui.set_min_width(LABEL_WIDTH);
+                    ui.set_min_width(style_constants::NEW_EDIT_DIALOG_MIN_LABEL_WIDTH);
                     ui.label("Details");
                 });
                 ui.add(
@@ -445,7 +463,7 @@ impl KrabbyDoUi {
             });
             ui.with_layout(egui::Layout::left_to_right(egui::Align::TOP), |ui| {
                 ui.with_layout(egui::Layout::left_to_right(egui::Align::TOP), |ui| {
-                    ui.set_min_width(LABEL_WIDTH);
+                    ui.set_min_width(style_constants::NEW_EDIT_DIALOG_MIN_LABEL_WIDTH);
                     ui.label("Date");
                 });
                 let date = self
@@ -455,17 +473,17 @@ impl KrabbyDoUi {
             });
             ui.with_layout(egui::Layout::left_to_right(egui::Align::TOP), |ui| {
                 ui.with_layout(egui::Layout::left_to_right(egui::Align::TOP), |ui| {
-                    ui.set_min_width(LABEL_WIDTH);
+                    ui.set_min_width(style_constants::NEW_EDIT_DIALOG_MIN_LABEL_WIDTH);
                     ui.label("Time");
                 });
                 ui.with_layout(egui::Layout::left_to_right(egui::Align::TOP), |ui| {
                     ui.with_layout(egui::Layout::left_to_right(egui::Align::TOP), |ui| {
-                        ui.set_min_width(LABEL_WIDTH);
+                        ui.set_min_width(style_constants::NEW_EDIT_DIALOG_MIN_LABEL_WIDTH);
                         ui.label("Hour");
                         ui.add(egui::DragValue::new(&mut self.new_event_hour).speed(0.1));
                     });
                     ui.with_layout(egui::Layout::left_to_right(egui::Align::TOP), |ui| {
-                        ui.set_min_width(LABEL_WIDTH);
+                        ui.set_min_width(style_constants::NEW_EDIT_DIALOG_MIN_LABEL_WIDTH);
                         ui.label("Minute");
                         ui.add(egui::DragValue::new(&mut self.new_event_minute).speed(0.1));
                     });
@@ -477,15 +495,13 @@ impl KrabbyDoUi {
             });
             ui.with_layout(egui::Layout::left_to_right(egui::Align::TOP), |ui| {
                 ui.with_layout(egui::Layout::left_to_right(egui::Align::TOP), |ui| {
-                    ui.set_min_width(LABEL_WIDTH);
-                    ui.add(egui::Checkbox::new(
-                        &mut self.new_event_is_done,
-                        "Mark Done",
-                    ));
+                    ui.set_min_width(style_constants::NEW_EDIT_DIALOG_MIN_LABEL_WIDTH);
+                    ui.label("Mark Done");
                 });
+                ui.add(egui::Checkbox::new(&mut self.new_event_is_done, ""));
             });
             ui.with_layout(egui::Layout::left_to_right(egui::Align::TOP), |ui| {
-                ui.set_max_width(330.0);
+                ui.set_max_width(style_constants::NEW_EDIT_DIALOG_MAX_WIDTH);
                 ui.with_layout(egui::Layout::right_to_left(egui::Align::TOP), |ui| {
                     if ui.button("Cancel").clicked() {
                         KrabbyDoUi::handle_new_edit_cancel_button_clicked(self);
