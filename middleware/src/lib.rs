@@ -4,7 +4,7 @@ use mongodb::{options::ClientOptions, Client};
 use tokio::runtime::Runtime;
 
 /// Struct to store event data
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone, PartialEq)]
 pub struct EventEntry {
     pub unique_id: String,
     pub title: String,
