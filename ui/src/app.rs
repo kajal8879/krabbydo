@@ -221,10 +221,14 @@ impl KrabbyDoUi {
         } else if self.new_edit_title == "Edit Event" {
             println!("\nEntry edit requested!\n");
             if self.active_entry.is_done {
-                if let Some(index) = self.test_entries_completed.iter().position(|x| x == &(self.active_entry)) {
+                if let Some(index) = self
+                    .test_entries_completed
+                    .iter()
+                    .position(|x| x == &(self.active_entry))
+                {
                     self.test_entries_completed[index] = new_entry.clone();
                     self.handle_event_list_item_clicked(&new_entry);
-                } 
+                }
             }
         }
     }
@@ -299,13 +303,17 @@ impl KrabbyDoUi {
     pub fn handle_event_list_item_delete_button_clicked(&mut self, entry: &EventEntry) {
         let local_entry = &entry.clone();
         if local_entry.is_done {
-            if let Some(index) = self.test_entries_completed.iter().position(|x| x == local_entry) {
+            if let Some(index) = self
+                .test_entries_completed
+                .iter()
+                .position(|x| x == local_entry)
+            {
                 self.test_entries_completed.remove(index);
-            } 
+            }
         } else {
             if let Some(index) = self.test_entries.iter().position(|x| x == local_entry) {
                 self.test_entries.remove(index);
-            } 
+            }
         }
     }
 
@@ -342,7 +350,8 @@ impl KrabbyDoUi {
         ui.push_id(widget_id, |ui| {
             ScrollArea::vertical().show(ui, |ui| {
                 for entry in entries {
-                    ui.style_mut().spacing.item_spacing.y = style_constants::EVENT_LIST_BUTTON_SPACING;
+                    ui.style_mut().spacing.item_spacing.y =
+                        style_constants::EVENT_LIST_BUTTON_SPACING;
                     ui.with_layout(Layout::top_down(Align::TOP), |ui| {
                         ui.set_min_width(50.0);
                         ui.set_max_width(200.0);
@@ -361,7 +370,9 @@ impl KrabbyDoUi {
                                 |ui| {
                                     ui.set_min_width(40.0);
                                     if ui.button("Edit").clicked() {
-                                        KrabbyDoUi::handle_event_list_item_edit_button_clicked(self, &entry);
+                                        KrabbyDoUi::handle_event_list_item_edit_button_clicked(
+                                            self, &entry,
+                                        );
                                     }
                                 },
                             );
@@ -370,7 +381,9 @@ impl KrabbyDoUi {
                                 |ui| {
                                     ui.set_min_width(40.0);
                                     if ui.button("Delete").clicked() {
-                                        KrabbyDoUi::handle_event_list_item_delete_button_clicked(self, &entry);
+                                        KrabbyDoUi::handle_event_list_item_delete_button_clicked(
+                                            self, &entry,
+                                        );
                                     }
                                 },
                             );
