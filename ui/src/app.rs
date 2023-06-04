@@ -229,6 +229,16 @@ impl KrabbyDoUi {
                     self.test_entries_completed[index] = new_entry.clone();
                     self.handle_event_list_item_clicked(&new_entry);
                 }
+            } else {
+                if let Some(index) = self
+                    .test_entries
+                    .iter()
+                    .position(|x| x == &(self.active_entry))
+                {
+                    self.test_entries[index] = new_entry.clone();
+                    self.handle_event_list_item_clicked(&new_entry);
+                }
+
             }
         }
     }
