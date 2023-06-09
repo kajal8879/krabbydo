@@ -238,7 +238,6 @@ impl KrabbyDoUi {
                     self.test_entries[index] = new_entry.clone();
                     self.handle_event_list_item_clicked(&new_entry);
                 }
-
             }
         }
     }
@@ -605,5 +604,27 @@ impl eframe::App for KrabbyDoUi {
             // New / Edit Event dialog
             self.setup_new_event_dialog(ctx);
         }
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    #[test]
+    fn test_get_selected_date() {
+        let mut test_ui = KrabbyDoUi::default();
+        test_ui.new_event_date = NaiveDate::from_ymd_opt(2023, 6, 9);
+        let test_date = NaiveDate::from_ymd_opt(2023, 6, 9).unwrap();
+        assert_eq!(test_ui.get_selected_date().unwrap(), test_date);
+    }
+
+    #[test]
+    fn test_get_selected_date_time() {
+        let mut test_ui = KrabbyDoUi::default();
+        test_ui.new_event_date = NaiveDate::from_ymd_opt(2023, 6, 9);
+        test_ui.new_event_hour = 15;
+        test_ui.new_event_minute = 9;
+        let test_date_time = Utc.with_ymd_and_hms(2023, 6, 9, 15, 9, 0).unwrap();
+        assert_eq!(test_ui.get_selected_date_time(), test_date_time);
     }
 }
