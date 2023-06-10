@@ -4,11 +4,13 @@ Authors: [Rohan Singh](mailto:rohsingh@pdx.edu), [Kajal Patil](mailto:kajal@pdx.
 
 ---
 
-### Overview
+## Overview
 
-Krabby Do is an application based in Rust that allows a user to create to-do lists to help them manage their tasks.
+Krabby Do is an application based in Rust that allows a user to create to-do lists and event reminders to help them manage their tasks and events.
 
-Krabby Do will offer the following features:
+---
+
+## Intended functions
 
 - Create a new task.
 - Edit an existing task.
@@ -17,11 +19,72 @@ Krabby Do will offer the following features:
 - Assign deadlines to a certain task.
 - Receive a notification for a particular task at a time specified by the user.
 
-This project will consist of three major parts:
+---
+
+## Build Instructions
+
+1. Install Rust in your system if you don't have it installed. It is available here: https://www.rust-lang.org/tools/install
+2. Clone the repository from either of the following links:
+   - https://gitlab.cecs.pdx.edu/krabbydo/krabbydo.git (HTTPS)
+   - git@gitlab.cecs.pdx.edu:krabbydo/krabbydo.git (SSH)
+3. Navigate to the repository.
+4. Open terminal and run the following command:
+
+```sh
+cargo run
+```
+
+---
+
+## Testing
+
+Testing was done using unit tests embedded into the code files in each crate.
+
+This project consists of three major parts:
+
+---
+
+## Example
+
+[How to use Krabby Do](./resources/usage_example.md)
+
+---
+
+## Analysis
+
+### What Worked
+
+- Rohan - Creating UI elements and implementing layouts for them.
+- Kajal -
+- Prachi -
+
+### What Didn't Work
+
+- Rohan - Styling the UI elements.
+- Kajal -
+- Prachi -
+
+### Conclusion
+
+- Rohan - I am satisfied with the result but in future I would like to improve the styling of the application as currently it looks a bit too bland for my taste.
+- Kajal -
+- Prachi -
+
+---
+
+## License
+
+[LICENSE](./LICENSE)
+
+---
+
+## Project Structure
+
+Krabby Do consists of three crates with each crate created and managed by a member of the team:
 
 - #### UI
 
-  This component will enable a user to add tasks for which he/she needs to create a reminder. The UI will offer CRUD options such as create, edit and delete a task. The UI implementation will be done using egui. This component will form one of the three crates for the project.
+  This crate enables a user to add tasks or events for which the user needs to create reminders through a GUI. The UI offers CRUD options such as create, view, edit and delete a task. The UI implementation has been done using **egui**.
 
   This crate is handled by Rohan Singh.
 
