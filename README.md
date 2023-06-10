@@ -2,13 +2,9 @@
 
 Authors: [Rohan Singh](mailto:rohsingh@pdx.edu), [Kajal Patil](mailto:kajal@pdx.edu), [Prachi Kashyap](mailto:pk23@pdx.edu)
 
----
-
 ## Overview
 
 Krabby Do is an application based in Rust that allows a user to create to-do lists and event reminders to help them manage their tasks and events.
-
----
 
 ## Intended functions
 
@@ -18,8 +14,6 @@ Krabby Do is an application based in Rust that allows a user to create to-do lis
 - Mark a task as complete or incomplete.
 - Assign deadlines to a certain task.
 - Receive a notification for a particular task at a time specified by the user.
-
----
 
 ## Build Instructions
 
@@ -34,19 +28,13 @@ Krabby Do is an application based in Rust that allows a user to create to-do lis
 cargo run
 ```
 
----
-
 ## Testing
 
 Testing was done using unit tests embedded into the code files in each crate.
 
----
-
 ## Example
 
 [How to use Krabby Do](./resources/usage_example.md)
-
----
 
 ## Analysis
 
@@ -68,13 +56,9 @@ Testing was done using unit tests embedded into the code files in each crate.
 - Kajal -
 - Prachi -
 
----
-
 ## License
 
 [LICENSE](./LICENSE)
-
----
 
 ## Project Structure
 
@@ -97,8 +81,6 @@ Krabby Do consists of three crates with each crate created and managed by a memb
   This component will fetch data based on date and send the notifications to the user. We will use the ‘notify-rust’ library for implementation. For each task, a separate notification will be sent.
 
   This crate is handled by Prachi Kashyap.
-
----
 
 ### Repository
 
