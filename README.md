@@ -40,8 +40,6 @@ cargo run
 
 Testing was done using unit tests embedded into the code files in each crate.
 
-This project consists of three major parts:
-
 ---
 
 ## Example
