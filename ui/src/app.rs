@@ -60,9 +60,6 @@ pub struct KrabbyDoUi {
     /// Vector of test entries
     test_entries: Vec<EventEntry>,
 
-    /// Vector of test entries marked done
-    test_entries_completed: Vec<EventEntry>,
-
     /// To hold the value for Title to be displayed in the event details panel
     details_panel_title: String,
 
@@ -123,8 +120,6 @@ impl Default for KrabbyDoUi {
                     date_time: Utc.with_ymd_and_hms(2020, 5, 14, 22, 2, 0).unwrap(),
                     is_done: false,
                 },
-            ],
-            test_entries_completed: vec![
                 EventEntry {
                     unique_id: String::from(""),
                     title: String::from("Echo"),
@@ -213,31 +208,17 @@ impl KrabbyDoUi {
         };
         println!("{:?}", new_entry);
         if self.new_edit_title == "New Event" {
-            if self.new_event_is_done {
-                self.test_entries_completed.push(new_entry);
-            } else {
-                self.test_entries.push(new_entry);
-            }
+            self.test_entries.push(new_entry);
         } else if self.new_edit_title == "Edit Event" {
             println!("\nEntry edit requested!\n");
-            if self.active_entry.is_done {
-                if let Some(index) = self
-                    .test_entries_completed
-                    .iter()
-                    .position(|x| x == &(self.active_entry))
-                {
-                    self.test_entries_completed[index] = new_entry.clone();
-                    self.handle_event_list_item_clicked(&new_entry);
-                }
-            } else {
-                if let Some(index) = self
-                    .test_entries
-                    .iter()
-                    .position(|x| x == &(self.active_entry))
-                {
-                    self.test_entries[index] = new_entry.clone();
-                    self.handle_event_list_item_clicked(&new_entry);
-                }
+
+            if let Some(index) = self
+                .test_entries
+                .iter()
+                .position(|x| x == &(self.active_entry))
+            {
+                self.test_entries[index] = new_entry.clone();
+                self.handle_event_list_item_clicked(&new_entry);
             }
         }
     }
@@ -267,7 +248,6 @@ impl KrabbyDoUi {
                 .date_time
                 .format("Date: %A, %B %e, %Y \tTime: %l:%M %p")
         );
-
         println!("{:?}", entry);
     }
 
@@ -298,7 +278,6 @@ impl KrabbyDoUi {
             self.new_event_hour = date_time.hour() - 12;
         }
         self.new_event_minute = date_time.minute();
-
         self.new_event_is_done = self.active_entry.is_done;
     }
 
@@ -311,18 +290,8 @@ impl KrabbyDoUi {
     /// Handle Delete button clicked on event list entry
     pub fn handle_event_list_item_delete_button_clicked(&mut self, entry: &EventEntry) {
         let local_entry = &entry.clone();
-        if local_entry.is_done {
-            if let Some(index) = self
-                .test_entries_completed
-                .iter()
-                .position(|x| x == local_entry)
-            {
-                self.test_entries_completed.remove(index);
-            }
-        } else {
-            if let Some(index) = self.test_entries.iter().position(|x| x == local_entry) {
-                self.test_entries.remove(index);
-            }
+        if let Some(index) = self.test_entries.iter().position(|x| x == local_entry) {
+            self.test_entries.remove(index);
         }
     }
 
@@ -354,50 +323,58 @@ impl KrabbyDoUi {
         self.date_time
     }
 
+    /// Function to create a UI list item for event list
+    pub fn create_event_list_item(&mut self, ui: &mut Ui, entry: EventEntry) {
+        ui.style_mut().spacing.item_spacing.y = style_constants::EVENT_LIST_BUTTON_SPACING;
+        ui.with_layout(Layout::top_down(Align::TOP), |ui| {
+            ui.set_min_width(50.0);
+            ui.set_max_width(200.0);
+            ui.with_layout(Layout::left_to_right(Align::TOP), |ui| {
+                ui.set_max_height(style_constants::EVENT_LIST_BUTTON_MAX_HEIGHT);
+                ui.with_layout(
+                    Layout::centered_and_justified(Direction::LeftToRight),
+                    |ui| {
+                        if ui.button(entry.title.clone()).clicked() {
+                            KrabbyDoUi::handle_event_list_item_clicked(self, &entry);
+                        }
+                    },
+                );
+                ui.with_layout(
+                    Layout::centered_and_justified(Direction::LeftToRight),
+                    |ui| {
+                        ui.set_min_width(40.0);
+                        if ui.button("Edit").clicked() {
+                            KrabbyDoUi::handle_event_list_item_edit_button_clicked(self, &entry);
+                        }
+                    },
+                );
+                ui.with_layout(
+                    Layout::centered_and_justified(Direction::LeftToRight),
+                    |ui| {
+                        ui.set_min_width(40.0);
+                        if ui.button("Delete").clicked() {
+                            KrabbyDoUi::handle_event_list_item_delete_button_clicked(self, &entry);
+                        }
+                    },
+                );
+            });
+        });
+    }
+
     /// Generic function to populate a list of events using the event list supplied as an argument
-    pub fn list_events(&mut self, ui: &mut Ui, widget_id: u32, entries: Vec<EventEntry>) {
+    pub fn list_events(&mut self, ui: &mut Ui, widget_id: u32, is_show_events_marked_done: bool) {
         ui.push_id(widget_id, |ui| {
             ScrollArea::vertical().show(ui, |ui| {
-                for entry in entries {
-                    ui.style_mut().spacing.item_spacing.y =
-                        style_constants::EVENT_LIST_BUTTON_SPACING;
-                    ui.with_layout(Layout::top_down(Align::TOP), |ui| {
-                        ui.set_min_width(50.0);
-                        ui.set_max_width(200.0);
-                        ui.with_layout(Layout::left_to_right(Align::TOP), |ui| {
-                            ui.set_max_height(style_constants::EVENT_LIST_BUTTON_MAX_HEIGHT);
-                            ui.with_layout(
-                                Layout::centered_and_justified(Direction::LeftToRight),
-                                |ui| {
-                                    if ui.button(entry.title.clone()).clicked() {
-                                        KrabbyDoUi::handle_event_list_item_clicked(self, &entry);
-                                    }
-                                },
-                            );
-                            ui.with_layout(
-                                Layout::centered_and_justified(Direction::LeftToRight),
-                                |ui| {
-                                    ui.set_min_width(40.0);
-                                    if ui.button("Edit").clicked() {
-                                        KrabbyDoUi::handle_event_list_item_edit_button_clicked(
-                                            self, &entry,
-                                        );
-                                    }
-                                },
-                            );
-                            ui.with_layout(
-                                Layout::centered_and_justified(Direction::LeftToRight),
-                                |ui| {
-                                    ui.set_min_width(40.0);
-                                    if ui.button("Delete").clicked() {
-                                        KrabbyDoUi::handle_event_list_item_delete_button_clicked(
-                                            self, &entry,
-                                        );
-                                    }
-                                },
-                            );
-                        });
-                    });
+                for entry in self.test_entries.clone() {
+                    if is_show_events_marked_done {
+                        if entry.is_done {
+                            self.create_event_list_item(ui, entry);
+                        }
+                    } else {
+                        if !entry.is_done {
+                            self.create_event_list_item(ui, entry);
+                        }
+                    }
                 }
             });
         });
@@ -440,7 +417,7 @@ impl KrabbyDoUi {
             ui.separator();
             ui.heading("Upcoming Events");
             ui.with_layout(Layout::left_to_right(Align::TOP), |_ui| {});
-            self.list_events(ui, 123456, self.test_entries.clone());
+            self.list_events(ui, 123456, false);
             ui.separator();
             ui.with_layout(Layout::bottom_up(Align::LEFT), |ui| {
                 ui.horizontal(|ui| {
@@ -457,7 +434,7 @@ impl KrabbyDoUi {
             ui.with_layout(Layout::left_to_right(Align::TOP), |_ui| {});
             ui.heading("Marked Done");
             ui.with_layout(Layout::left_to_right(Align::TOP), |_ui| {});
-            self.list_events(ui, 123457, self.test_entries_completed.clone());
+            self.list_events(ui, 123457, true);
             ui.separator();
         });
     }
