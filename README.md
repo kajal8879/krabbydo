@@ -82,7 +82,7 @@ Krabby Do consists of three crates with each crate created and managed by a memb
 
   This crate is handled by Prachi Kashyap.
 
-### Repository
+## Repository
 
 [KrabbyDo](https://gitlab.cecs.pdx.edu/krabbydo/krabbydo)
 
