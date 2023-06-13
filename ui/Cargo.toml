@@ -5,6 +5,8 @@ authors = ["Rohan Singh <rohsingh@pdx.edu>"]
 edition = "2021"
 
 [dependencies]
+bson = "2.6.1"
+tokio = { version = "1", features = ["full"] }
 chrono = "0.4.24"
 egui = "0.21.0"
 eframe = { version = "0.21.0", default-features = false, features = [
