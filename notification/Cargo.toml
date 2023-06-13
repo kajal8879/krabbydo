@@ -7,4 +7,6 @@ edition = "2021"
 
 [dependencies]
 chrono = "0.4.24"
-middleware = {path = "../middleware"}
+middleware = {path = "../middleware"} 
+tokio = { version = "1", features = ["full"] }
+notify-rust = "4.0.0"
