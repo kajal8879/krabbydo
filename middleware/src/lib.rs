@@ -121,6 +121,45 @@ impl EventEntry {
         println!("Tasks: {:?}", tasks);
         Ok(tasks)
     }
+    pub async fn get_today_events() -> Result<Vec<EventEntry>, Box<dyn std::error::Error>> {
+        let client = create_mongodb_client().await?;
+        let db = client.database("events");
+        let collection: Collection<Document> = db.collection("todos");
+
+        let now = Utc::now();
+        let today = now.date_naive().and_hms_opt(0, 0, 0).unwrap();
+        let tomorrow = today + chrono::Duration::days(1);
+
+        // Filter documents based on the date range from today to tomorrow
+        let filter = doc! {
+            "date_time": {
+                "$gte": today.to_string(),
+                "$lt": tomorrow.to_string()
+            }
+        };
+
+        // Find documents that match the filter
+        let mut cursor = collection.find(filter, None).await?;
+
+        let mut tasks = Vec::new();
+
+        while let Some(result) = TokioStreamExt::try_next(&mut cursor).await? {
+            let unique_id = match result.get("_id") {
+                Some(Bson::ObjectId(object_id)) => object_id.clone(),
+                _ => return Err("Invalid unique_id".into()),
+            };
+            let title = result.get_str("title")?.to_string();
+            let details = result.get_str("details")?.to_string();
+            let date_time_str = result.get_str("date_time")?;
+            let date_time = DateTime::parse_from_rfc3339(date_time_str)?.with_timezone(&Utc);
+            let is_done = result.get_bool("is_done")?;
+
+            let task = EventEntry::new(unique_id, title, details, date_time, is_done);
+            tasks.push(task);
+        }
+        println!("Tasks: {:?}", tasks);
+        Ok(tasks)
+    }
 }
 
 pub async fn create_mongodb_client() -> Result<Client, Box<dyn std::error::Error>> {
@@ -191,4 +230,19 @@ fn test_delete_or_mark_completed() {
 
     // Assert that the delete_or_mark_completed function succeeded
     assert!(result.is_ok(), "delete_or_mark_completed failed");
+}
+#[test]
+fn test_get_today_events() {
+    let rt = tokio::runtime::Runtime::new().unwrap();
+
+    // Run the get_today_events function asynchronously
+    let result = rt.block_on(async { EventEntry::get_today_events().await });
+
+    // Print the error message if the test fails
+    if let Err(ref err) = result {
+        println!("Error: {}", err);
+    }
+
+    // Assert that the get_today_events function succeeded
+    assert!(result.is_ok(), "get_today_events failed");
 }
