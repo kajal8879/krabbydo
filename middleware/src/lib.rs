@@ -45,7 +45,7 @@ impl EventEntry {
             "title": self.title.clone(),
             "details": self.details.clone(),
             "date_time": self.date_time.to_rfc3339(),
-            "is_done":true,
+            "is_done":false,
         };
 
         // Insert the document into the collection
@@ -81,7 +81,7 @@ impl EventEntry {
         let filter = doc! { "_id": self.unique_id };
 
         // Update the is_done field to false to mark it as completed or remove the document entirely
-        let update = doc! { "$set": { "is_done": false } };
+        let update = doc! { "$set": { "is_done": true } };
 
         // Update the document in the collection
         collection.update_one(filter, update, None).await?;
@@ -208,11 +208,6 @@ fn test_get_all_tasks() {
     // Run the get_all_tasks function asynchronously
     let result = rt.block_on(async { EventEntry::get_all_tasks().await });
 
-    // Print the error message if the test fails
-    if let Err(ref err) = result {
-        println!("Error: {}", err);
-    }
-
     // Assert that the get_all_tasks function succeeded
     assert!(result.is_ok(), "get_all_tasks failed");
 }
@@ -237,11 +232,6 @@ fn test_get_today_events() {
 
     // Run the get_today_events function asynchronously
     let result = rt.block_on(async { EventEntry::get_today_events().await });
-
-    // Print the error message if the test fails
-    if let Err(ref err) = result {
-        println!("Error: {}", err);
-    }
 
     // Assert that the get_today_events function succeeded
     assert!(result.is_ok(), "get_today_events failed");

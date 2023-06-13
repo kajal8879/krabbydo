@@ -207,14 +207,13 @@ impl KrabbyDoUi {
             is_done: self.new_event_is_done,
         };
 
-        #[cfg(feature="print_debug_log")]
+        #[cfg(feature = "print_debug_log")]
         println!("{:?}", new_entry);
 
         if self.new_edit_title == "New Event" {
             self.test_entries.push(new_entry);
         } else if self.new_edit_title == "Edit Event" {
-
-            #[cfg(feature="print_debug_log")]
+            #[cfg(feature = "print_debug_log")]
             println!("\nEntry edit requested!\n");
 
             if let Some(index) = self
@@ -254,14 +253,13 @@ impl KrabbyDoUi {
                 .format("Date: %A, %B %e, %Y \tTime: %l:%M %p")
         );
 
-        #[cfg(feature="print_debug_log")]
+        #[cfg(feature = "print_debug_log")]
         println!("{:?}", entry);
     }
 
     /// Handle Edit Event button clicked
     pub fn handle_edit_event_button_clicked(&mut self) {
-
-        #[cfg(feature="print_debug_log")]
+        #[cfg(feature = "print_debug_log")]
         println!("\nEdit Event button clicked!\n");
 
         self.new_edit_title = String::from("Edit Event");
@@ -307,8 +305,7 @@ impl KrabbyDoUi {
 
     /// Get the date selected by the date picker widget in NaiveDate format wrapped in Option
     pub fn get_selected_date(&mut self) -> Option<NaiveDate> {
-        
-        #[cfg(feature="print_debug_log")]
+        #[cfg(feature = "print_debug_log")]
         println!("Date selected: {}", self.new_event_date.unwrap_or_default());
 
         self.new_event_date
