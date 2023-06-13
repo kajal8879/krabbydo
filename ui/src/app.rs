@@ -7,6 +7,7 @@ use egui::{
     menu, widgets, Align, CentralPanel, Checkbox, Direction, DragValue, Label, Layout, ScrollArea,
     SidePanel, TopBottomPanel, Ui, Window,
 };
+use bson::oid::ObjectId;
 use middleware::EventEntry;
 
 // https://stackoverflow.com/questions/48071513/how-to-use-one-module-from-another-module-in-a-rust-cargo-project
@@ -93,49 +94,49 @@ impl Default for KrabbyDoUi {
             test_entries: // https://doc.rust-lang.org/std/vec/struct.Vec.html
                 vec![
                     EventEntry {
-                    unique_id: String::from(""),
+                    unique_id: ObjectId::new(),
                     title: String::from("Alpha"),
                     details: String::from("Alpha - Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum"),
                     date_time: Utc.with_ymd_and_hms(2023, 5, 14, 22, 2, 0).unwrap(),
                     is_done: false,
                 },
                 EventEntry {
-                    unique_id: String::from(""),
+                    unique_id: ObjectId::new(),
                     title: String::from("Bravo"),
                     details: String::from("Bravo - Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum"),
                     date_time: Utc.with_ymd_and_hms(2022, 5, 14, 22, 2, 0).unwrap(),
                     is_done: false,
                 },
                 EventEntry {
-                    unique_id: String::from(""),
+                    unique_id: ObjectId::new(),
                     title: String::from("Charlie"),
                     details: String::from("Charlie - Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum"),
                     date_time: Utc.with_ymd_and_hms(2021, 5, 14, 22, 2, 0).unwrap(),
                     is_done: false,
                 },
                 EventEntry {
-                    unique_id: String::from(""),
+                    unique_id: ObjectId::new(),
                     title: String::from("Delta"),
                     details: String::from("Delta - Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum"),
                     date_time: Utc.with_ymd_and_hms(2020, 5, 14, 22, 2, 0).unwrap(),
                     is_done: false,
                 },
                 EventEntry {
-                    unique_id: String::from(""),
+                    unique_id: ObjectId::new(),
                     title: String::from("Echo"),
                     details: String::from("Echo details"),
                     date_time: Utc.with_ymd_and_hms(2019, 5, 14, 22, 2, 0).unwrap(),
                     is_done: true,
                 },
                 EventEntry {
-                    unique_id: String::from(""),
+                    unique_id: ObjectId::new(),
                     title: String::from("Foxtrot"),
                     details: String::from("Foxtrot details"),
                     date_time: Utc.with_ymd_and_hms(2018, 5, 14, 22, 2, 0).unwrap(),
                     is_done: true,
                 },
                 EventEntry {
-                    unique_id: String::from(""),
+                    unique_id: ObjectId::new(),
                     title: String::from("Golf"),
                     details: String::from("Golf details"),
                     date_time: Utc.with_ymd_and_hms(2017, 5, 14, 22, 2, 0).unwrap(),
@@ -146,7 +147,7 @@ impl Default for KrabbyDoUi {
             details_panel_details: String::from(""),
             details_panel_time: String::from(""),
             active_entry: EventEntry {
-                unique_id: String::from(""),
+                unique_id: ObjectId::new(),
                 title: String::from(""),
                 details: String::from(""),
                 date_time: Utc.with_ymd_and_hms(2000, 1, 1, 1, 1, 1).unwrap(),
@@ -200,7 +201,7 @@ impl KrabbyDoUi {
     pub fn handle_new_edit_ok_button_clicked(&mut self) {
         self.is_show_new_edit_dialog = false;
         let new_entry = EventEntry {
-            unique_id: String::from(""),
+            unique_id: self.active_entry.unique_id.clone(),
             title: self.new_event_title.clone(),
             details: self.new_event_details.clone(),
             date_time: self.get_selected_date_time(),
