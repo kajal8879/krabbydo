@@ -58,8 +58,8 @@ pub struct KrabbyDoUi {
     /// To store the value of date and time in a unified format
     date_time: DateTime<Utc>,
 
-    /// Vector of test entries
-    test_entries: Vec<EventEntry>,
+    /// Vector of event entries
+    event_entries: Vec<EventEntry>,
 
     /// To hold the value for Title to be displayed in the event details panel
     details_panel_title: String,
@@ -91,58 +91,7 @@ impl Default for KrabbyDoUi {
             new_event_minute: 30,
             new_event_am_pm: AmPm::Pm,
             date_time: Utc.with_ymd_and_hms(2023, 5, 20, 22, 2, 0).unwrap(),
-            test_entries: // https://doc.rust-lang.org/std/vec/struct.Vec.html
-                vec![
-                    EventEntry {
-                    unique_id: ObjectId::new(),
-                    title: String::from("Alpha"),
-                    details: String::from("Alpha - Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum"),
-                    date_time: Utc.with_ymd_and_hms(2023, 5, 14, 22, 2, 0).unwrap(),
-                    is_done: false,
-                },
-                EventEntry {
-                    unique_id: ObjectId::new(),
-                    title: String::from("Bravo"),
-                    details: String::from("Bravo - Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum"),
-                    date_time: Utc.with_ymd_and_hms(2022, 5, 14, 22, 2, 0).unwrap(),
-                    is_done: false,
-                },
-                EventEntry {
-                    unique_id: ObjectId::new(),
-                    title: String::from("Charlie"),
-                    details: String::from("Charlie - Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum"),
-                    date_time: Utc.with_ymd_and_hms(2021, 5, 14, 22, 2, 0).unwrap(),
-                    is_done: false,
-                },
-                EventEntry {
-                    unique_id: ObjectId::new(),
-                    title: String::from("Delta"),
-                    details: String::from("Delta - Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum"),
-                    date_time: Utc.with_ymd_and_hms(2020, 5, 14, 22, 2, 0).unwrap(),
-                    is_done: false,
-                },
-                EventEntry {
-                    unique_id: ObjectId::new(),
-                    title: String::from("Echo"),
-                    details: String::from("Echo details"),
-                    date_time: Utc.with_ymd_and_hms(2019, 5, 14, 22, 2, 0).unwrap(),
-                    is_done: true,
-                },
-                EventEntry {
-                    unique_id: ObjectId::new(),
-                    title: String::from("Foxtrot"),
-                    details: String::from("Foxtrot details"),
-                    date_time: Utc.with_ymd_and_hms(2018, 5, 14, 22, 2, 0).unwrap(),
-                    is_done: true,
-                },
-                EventEntry {
-                    unique_id: ObjectId::new(),
-                    title: String::from("Golf"),
-                    details: String::from("Golf details"),
-                    date_time: Utc.with_ymd_and_hms(2017, 5, 14, 22, 2, 0).unwrap(),
-                    is_done: true,
-                },
-            ],
+            event_entries: tokio::runtime::Runtime::new().unwrap().block_on(async { EventEntry::get_all_tasks().await }).unwrap(),
             details_panel_title: String::from("Krabby Do"),
             details_panel_details: String::from(""),
             details_panel_time: String::from(""),
@@ -201,7 +150,7 @@ impl KrabbyDoUi {
     pub fn handle_new_edit_ok_button_clicked(&mut self) {
         self.is_show_new_edit_dialog = false;
         let new_entry = EventEntry {
-            unique_id: self.active_entry.unique_id.clone(),
+            unique_id: self.active_entry.unique_id,
             title: self.new_event_title.clone(),
             details: self.new_event_details.clone(),
             date_time: self.get_selected_date_time(),
@@ -212,17 +161,20 @@ impl KrabbyDoUi {
         println!("{:?}", new_entry);
 
         if self.new_edit_title == "New Event" {
-            self.test_entries.push(new_entry);
+            let _result = tokio::runtime::Runtime::new().unwrap().block_on(async { new_entry.add_event().await });
+            self.event_entries.push(new_entry);
         } else if self.new_edit_title == "Edit Event" {
             #[cfg(feature = "print_debug_log")]
             println!("\nEntry edit requested!\n");
-
+            
+            let _result = tokio::runtime::Runtime::new().unwrap().block_on(async { new_entry.update_task().await });
+            
             if let Some(index) = self
-                .test_entries
+                .event_entries
                 .iter()
                 .position(|x| x == &(self.active_entry))
             {
-                self.test_entries[index] = new_entry.clone();
+                self.event_entries[index] = new_entry.clone();
                 self.handle_event_list_item_clicked(&new_entry);
             }
         }
@@ -299,8 +251,8 @@ impl KrabbyDoUi {
     /// Handle Delete button clicked on event list entry
     pub fn handle_event_list_item_delete_button_clicked(&mut self, entry: &EventEntry) {
         let local_entry = &entry.clone();
-        if let Some(index) = self.test_entries.iter().position(|x| x == local_entry) {
-            self.test_entries.remove(index);
+        if let Some(index) = self.event_entries.iter().position(|x| x == local_entry) {
+            self.event_entries.remove(index);
         }
     }
 
@@ -376,7 +328,7 @@ impl KrabbyDoUi {
     pub fn list_events(&mut self, ui: &mut Ui, widget_id: u32, is_show_events_marked_done: bool) {
         ui.push_id(widget_id, |ui| {
             ScrollArea::vertical().show(ui, |ui| {
-                for entry in self.test_entries.clone() {
+                for entry in self.event_entries.clone() {
                     if is_show_events_marked_done {
                         if entry.is_done {
                             self.create_event_list_item(ui, entry);
