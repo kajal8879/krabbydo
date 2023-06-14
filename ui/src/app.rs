@@ -9,6 +9,9 @@ use egui::{
 };
 use middleware::EventEntry;
 use bson::oid::ObjectId;
+use std::fs::File;
+use std::io::prelude::*;
+use serde_json;
 
 // https://stackoverflow.com/questions/48071513/how-to-use-one-module-from-another-module-in-a-rust-cargo-project
 // GUI elements' dimension values segregated in a different file for ease of modification
@@ -194,6 +197,18 @@ impl KrabbyDoUi {
         self.is_show_new_edit_dialog = false;
     }
 
+    /// Exports events to a JSON file.
+    pub fn export_events_to_json(&self, filename: &str) -> std::io::Result<()> {
+        // Serialize our events vector to a JSON string.
+        let json = serde_json::to_string_pretty(&self.event_entries).unwrap();
+        
+        // Create a file and write the JSON data to it.
+        let mut file = File::create(filename)?;
+        file.write_all(json.as_bytes())?;
+
+        Ok(())
+    }
+
     /// Handle event list item clicked.; on clicking the event, display the event details in the central panel
     pub fn handle_event_list_item_clicked(&mut self, entry: &EventEntry) {
         // Currently clicked item is made ready to be loaded into Edit Dialog
@@ -353,6 +368,7 @@ impl KrabbyDoUi {
     }
 
     /// Set up menu bar
+    /// Set up menu bar
     pub fn setup_menu_bar(&mut self, ctx: &egui::Context, frame: &mut eframe::Frame) {
         TopBottomPanel::top("menu_panel").show(ctx, |ui| {
             menu::bar(ui, |ui| {
@@ -360,13 +376,20 @@ impl KrabbyDoUi {
                     if ui.button("New Event").clicked() {
                         KrabbyDoUi::handle_menu_new_clicked(self);
                     }
+                    if ui.button("Export").clicked() {
+                        let filename = "exported_events.json";  // Filename can be dynamically determined.
+                        match self.export_events_to_json(filename) {
+                            Ok(_) => println!("Successfully exported events to {}", filename),
+                            Err(e) => eprintln!("Error exporting events: {}", e),
+                        }
+                    }
                     if ui.button("Quit").clicked() {
                         frame.close();
                     }
                 });
 
                 ui.add(
-                    widgets::TextEdit::singleline(&mut self.search_query)
+                widgets::TextEdit::singleline(&mut self.search_query)
                         .hint_text("Search events"),
                 );
             });
