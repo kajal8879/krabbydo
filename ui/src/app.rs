@@ -1,3 +1,4 @@
+use bson::oid::ObjectId;
 use chrono::offset::*;
 use chrono::DateTime;
 use chrono::Datelike;
@@ -7,8 +8,8 @@ use egui::{
     menu, widgets, Align, CentralPanel, Checkbox, Direction, DragValue, Label, Layout, ScrollArea,
     SidePanel, TopBottomPanel, Ui, Window,
 };
-use bson::oid::ObjectId;
 use middleware::EventEntry;
+use notification::send_notifications;
 
 // https://stackoverflow.com/questions/48071513/how-to-use-one-module-from-another-module-in-a-rust-cargo-project
 // GUI elements' dimension values segregated in a different file for ease of modification
@@ -80,7 +81,9 @@ pub struct KrabbyDoUi {
 impl Default for KrabbyDoUi {
     /// Assign default values to struct properties
     fn default() -> Self {
-        Self {
+        send_notifications();
+
+        return Self {
             is_show_new_edit_dialog: false,
             is_show_central_panel_context_elements: false,
             new_event_title: "".to_owned(),
@@ -91,7 +94,10 @@ impl Default for KrabbyDoUi {
             new_event_minute: 30,
             new_event_am_pm: AmPm::Pm,
             date_time: Utc.with_ymd_and_hms(2023, 5, 20, 22, 2, 0).unwrap(),
-            event_entries: tokio::runtime::Runtime::new().unwrap().block_on(async { EventEntry::get_all_tasks().await }).unwrap(),
+            event_entries: tokio::runtime::Runtime::new()
+                .unwrap()
+                .block_on(async { EventEntry::get_all_tasks().await })
+                .unwrap(),
             details_panel_title: String::from("Krabby Do"),
             details_panel_details: String::from(""),
             details_panel_time: String::from(""),
@@ -161,14 +167,18 @@ impl KrabbyDoUi {
         println!("{:?}", new_entry);
 
         if self.new_edit_title == "New Event" {
-            let _result = tokio::runtime::Runtime::new().unwrap().block_on(async { new_entry.add_event().await });
+            let _result = tokio::runtime::Runtime::new()
+                .unwrap()
+                .block_on(async { new_entry.add_event().await });
             self.event_entries.push(new_entry);
         } else if self.new_edit_title == "Edit Event" {
             #[cfg(feature = "print_debug_log")]
             println!("\nEntry edit requested!\n");
-            
-            let _result = tokio::runtime::Runtime::new().unwrap().block_on(async { new_entry.update_task().await });
-            
+
+            let _result = tokio::runtime::Runtime::new()
+                .unwrap()
+                .block_on(async { new_entry.update_task().await });
+
             if let Some(index) = self
                 .event_entries
                 .iter()
