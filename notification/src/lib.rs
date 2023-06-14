@@ -1,4 +1,4 @@
-//!This crate will generate the notifcations for the event fetched from database which are due today
+//! This crate will generate the notifications for the event fetched from database which are due today
 //!It uses notify-rust crate to do so.
 use middleware::EventEntry;
 use notify_rust::Notification;
