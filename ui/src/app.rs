@@ -279,6 +279,7 @@ impl KrabbyDoUi {
         }
         self.new_event_minute = date_time.minute();
         self.new_event_is_done = self.active_entry.is_done;
+        self.new_event_tags = self.active_entry.tags.clone();
     }
 
     /// Handle Edit button clicked on event list entry
@@ -329,8 +330,8 @@ impl KrabbyDoUi {
     pub fn create_event_list_item(&mut self, ui: &mut Ui, entry: EventEntry) {
         ui.style_mut().spacing.item_spacing.y = style_constants::EVENT_LIST_BUTTON_SPACING;
         ui.with_layout(Layout::top_down(Align::TOP), |ui| {
-            ui.set_min_width(50.0);
-            ui.set_max_width(200.0);
+            ui.set_min_width(style_constants::EVENT_LIST_ITEM_MIN_WIDTH);
+            ui.set_max_width(style_constants::EVENT_LIST_ITEM_MAX_WIDTH);
             ui.with_layout(Layout::left_to_right(Align::TOP), |ui| {
                 ui.set_max_height(style_constants::EVENT_LIST_BUTTON_MAX_HEIGHT);
                 ui.with_layout(
@@ -344,7 +345,7 @@ impl KrabbyDoUi {
                 ui.with_layout(
                     Layout::centered_and_justified(Direction::LeftToRight),
                     |ui| {
-                        ui.set_min_width(40.0);
+                        ui.set_min_width(style_constants::EVENT_LIST_INTERNAL_BUTTON_MIN_WIDTH);
                         if ui.button("Edit").clicked() {
                             KrabbyDoUi::handle_event_list_item_edit_button_clicked(self, &entry);
                         }
@@ -353,7 +354,7 @@ impl KrabbyDoUi {
                 ui.with_layout(
                     Layout::centered_and_justified(Direction::LeftToRight),
                     |ui| {
-                        ui.set_min_width(40.0);
+                        ui.set_min_width(style_constants::EVENT_LIST_INTERNAL_BUTTON_MIN_WIDTH);
                         if ui.button("Delete").clicked() {
                             KrabbyDoUi::handle_event_list_item_delete_button_clicked(self, &entry);
                         }

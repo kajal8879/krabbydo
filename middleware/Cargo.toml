@@ -11,3 +11,6 @@ chrono = { version ="0.4.24", features = ["serde"] }
 tokio-stream = "0.1"
 futures-util = "0.3"
 serde = { version = "1.0", features = ["derive"] }
+
+[features]
+print_debug_log = []

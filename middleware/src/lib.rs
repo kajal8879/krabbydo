@@ -1,5 +1,5 @@
-//!This is the middleware of project , which deals with database and provide CRUDE operation which can be accessed by other crates as per need
-//!It Will connect to mongo database which we operated throuht monngo DB compass application.
+//! This is the middleware of project , which deals with database and provide CRUDE operation which can be accessed by other crates as per need
+//! It Will connect to mongo database which we operated throuht monngo DB compass application.
 
 use chrono::{DateTime, Utc};
 use mongodb::bson::{doc, oid::ObjectId, Bson, Document};
@@ -11,17 +11,17 @@ use tokio_stream::StreamExt as TokioStreamExt;
 /// EventEntry structs stores the data related to one particular event.
 #[derive(Serialize, Deserialize, Debug, Clone, PartialEq)]
 pub struct EventEntry {
-    ///Maps with mongoDb objectID
+    /// Maps with mongoDb objectID
     pub unique_id: ObjectId,
-    ///Denotates Title of the task
+    /// Denotates Title of the task
     pub title: String,
-    ///Denotates Descripation of task
+    /// Denotates Descripation of task
     pub details: String,
-    ///Denotates the time for deadline of task
+    /// Denotates the time for deadline of task
     pub date_time: DateTime<Utc>,
-    ///Denotates if task is done or not
+    /// Denotates if task is done or not
     pub is_done: bool,
-    ///Assigns the tag to the task like Home, Work etc.,
+    /// Assigns the tag to the task like Home, Work etc.,
     pub tags: String,
 }
 
@@ -43,9 +43,11 @@ impl EventEntry {
             tags,
         }
     }
-    ///This function adds an event to the database
+    /// This function adds an event to the database
     pub async fn add_event(&self) -> Result<(), Box<dyn std::error::Error>> {
+        #[cfg(feature = "print_debug_log")]
         println!("Event added to MongoDB");
+
         let client = create_mongodb_client().await?;
         // Get a handle to the "todos" collection in the "tasks" database
         let db = client.database("events");
@@ -65,9 +67,11 @@ impl EventEntry {
 
         Ok(())
     }
-    ///This function updates an event to the database
+    /// This function updates an event to the database
     pub async fn update_task(&self) -> Result<(), Box<dyn std::error::Error>> {
+        #[cfg(feature = "print_debug_log")]
         println!("Updating event with unique_id: {}", self.unique_id);
+
         let client = create_mongodb_client().await?;
         // Get a handle to the "todos" collection in the "tasks" database
         let db = client.database("events");
@@ -98,7 +102,7 @@ impl EventEntry {
 
         Ok(())
     }
-    ///This function fetches all the events from database to show on UI
+    /// This function fetches all the events from database to show on UI
     pub async fn get_all_tasks() -> Result<Vec<EventEntry>, Box<dyn std::error::Error>> {
         let client = create_mongodb_client().await?;
         let db = client.database("events");
@@ -132,7 +136,7 @@ impl EventEntry {
         Ok(tasks)
     }
 
-    ///This function fetches only todays events from the database
+    /// This function fetches only todays events from the database
     pub async fn get_today_events() -> Result<Vec<EventEntry>, Box<dyn std::error::Error>> {
         let client = create_mongodb_client().await?;
         let db = client.database("events");
@@ -172,7 +176,7 @@ impl EventEntry {
         Ok(tasks)
     }
 }
-///This function creates a connection client for the database
+/// This function creates a connection client for the database
 pub async fn create_mongodb_client() -> Result<Client, Box<dyn std::error::Error>> {
     let client_options = ClientOptions::parse("mongodb://localhost:27017").await?;
     let client = Client::with_options(client_options)?;

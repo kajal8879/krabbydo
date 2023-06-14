@@ -10,3 +10,6 @@ chrono = "0.4.24"
 middleware = {path = "../middleware"} 
 tokio = { version = "1", features = ["full"] }
 notify-rust = "4.0.0"
+
+[features]
+print_debug_log = []

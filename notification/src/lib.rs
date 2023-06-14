@@ -8,7 +8,10 @@ fn fetch_events_for_today() -> Result<Vec<EventEntry>, Box<dyn std::error::Error
     let rt = tokio::runtime::Runtime::new().unwrap();
     let notification_task_list =
         rt.block_on(async { EventEntry::get_today_events().await.unwrap() });
+
+    #[cfg(feature = "print_debug_log")]
     println!("{:?}", notification_task_list);
+
     Ok(notification_task_list)
 }
 
