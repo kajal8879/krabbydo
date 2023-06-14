@@ -1,5 +1,3 @@
-use std::str::FromStr;
-
 use chrono::{DateTime, Utc};
 use mongodb::bson::{doc, oid::ObjectId, Bson, Document};
 use mongodb::Collection;
@@ -14,6 +12,7 @@ pub struct EventEntry {
     pub details: String,
     pub date_time: DateTime<Utc>,
     pub is_done: bool,
+    pub tags: String,
 }
 
 impl EventEntry {
@@ -23,6 +22,7 @@ impl EventEntry {
         details: String,
         date_time: DateTime<Utc>,
         is_done: bool,
+        tags: String,
     ) -> Self {
         EventEntry {
             unique_id,
@@ -30,6 +30,7 @@ impl EventEntry {
             details,
             date_time,
             is_done,
+            tags,
         }
     }
 
@@ -45,7 +46,8 @@ impl EventEntry {
             "title": self.title.clone(),
             "details": self.details.clone(),
             "date_time": self.date_time.to_rfc3339(),
-            "is_done":false,
+            "is_done": false,
+            "tags": self.tags.clone(),
         };
 
         // Insert the document into the collection
@@ -108,9 +110,10 @@ impl EventEntry {
             let date_time_str = result.get_str("date_time")?;
             let date_time = DateTime::parse_from_rfc3339(date_time_str)?.with_timezone(&Utc);
             let is_done = result.get_bool("is_done")?;
+            let tags = result.get_str("tags")?.to_string();
 
             // Create a new EventEntry instance
-            let task = EventEntry::new(unique_id, title, details, date_time, is_done);
+            let task = EventEntry::new(unique_id, title, details, date_time, is_done,tags);
 
             // Add the task to the vector
             tasks.push(task);
@@ -150,8 +153,8 @@ impl EventEntry {
             let date_time_str = result.get_str("date_time")?;
             let date_time = DateTime::parse_from_rfc3339(date_time_str)?.with_timezone(&Utc);
             let is_done = result.get_bool("is_done")?;
-
-            let task = EventEntry::new(unique_id, title, details, date_time, is_done);
+            let tags = result.get_str("tags")?.to_string();
+            let task = EventEntry::new(unique_id, title, details, date_time, is_done, tags);
             tasks.push(task);
         }
         println!("Tasks: {:?}", tasks);
@@ -165,6 +168,10 @@ pub async fn create_mongodb_client() -> Result<Client, Box<dyn std::error::Error
     Ok(client)
 }
 
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use std::str::FromStr;
 #[test]
 fn test_update_task() {
     let task_name = String::from("KrabbyDo new setup 4");
@@ -172,8 +179,8 @@ fn test_update_task() {
     let reminder_time = Utc::now();
     let is_completed = false;
     let mongo_id = ObjectId::from_str("6482a04d44d9bc1cff4c66d7").unwrap();
-
-    let event_entry = EventEntry::new(mongo_id, task_name, task_desc, reminder_time, is_completed);
+    let tags = String::from("Test Tag"); 
+    let event_entry = EventEntry::new(mongo_id, task_name, task_desc, reminder_time, is_completed, tags);
     let rt = tokio::runtime::Runtime::new().unwrap();
     let result = rt.block_on(async { event_entry.update_task().await });
 
@@ -186,9 +193,9 @@ fn test_add_task() {
     let task_desc = String::from("First input Done! Mongo Setup successful3");
     let reminder_time = Utc::now();
     let is_completed = false;
-
-    let unique_id = ObjectId::new();
-    let event_entry = EventEntry::new(unique_id, task_name, task_desc, reminder_time, is_completed);
+    let tags = String::from("Test Tag"); 
+	let unique_id = ObjectId::new();
+    let event_entry = EventEntry::new(unique_id, task_name, task_desc, reminder_time, is_completed, tags);
     let rt = tokio::runtime::Runtime::new().unwrap();
 
     // Run the add_task function asynchronously
@@ -197,17 +204,23 @@ fn test_add_task() {
     // Assert that the add_task function succeeded
     assert!(result.is_ok(), "add_event failed");
 }
-#[test]
 
+#[test]
 fn test_get_all_tasks() {
     let rt = tokio::runtime::Runtime::new().unwrap();
 
     // Run the get_all_tasks function asynchronously
     let result = rt.block_on(async { EventEntry::get_all_tasks().await });
 
+    // Print the error message if the test fails
+    if let Err(ref err) = result {
+        println!("Error: {}", err);
+    }
+
     // Assert that the get_all_tasks function succeeded
     assert!(result.is_ok(), "get_all_tasks failed");
 }
+
 #[test]
 fn test_delete_event() {
     let task_name = String::from("KrabbyDo new setup");
@@ -215,14 +228,15 @@ fn test_delete_event() {
     let reminder_time = Utc::now();
     let is_completed = false;
     let mongo_id = ObjectId::from_str("6482a04d44d9bc1cff4c66d7").unwrap();
-
-    let event_entry = EventEntry::new(mongo_id, task_name, task_desc, reminder_time, is_completed);
+    let tags = String::from("Test Tag"); 
+    let event_entry = EventEntry::new(mongo_id, task_name, task_desc, reminder_time, is_completed, tags);
     let rt = tokio::runtime::Runtime::new().unwrap();
     let result = rt.block_on(async { event_entry.delete_event().await });
 
     // Assert that the delete_or_mark_completed function succeeded
     assert!(result.is_ok(), "delete_event failed");
 }
+
 #[test]
 fn test_get_today_events() {
     let rt = tokio::runtime::Runtime::new().unwrap();
@@ -232,4 +246,5 @@ fn test_get_today_events() {
 
     // Assert that the get_today_events function succeeded
     assert!(result.is_ok(), "get_today_events failed");
+}
 }
