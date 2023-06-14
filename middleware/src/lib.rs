@@ -2,8 +2,8 @@ use chrono::{DateTime, Utc};
 use mongodb::bson::{doc, oid::ObjectId, Bson, Document};
 use mongodb::Collection;
 use mongodb::{options::ClientOptions, Client};
+use serde::{Deserialize, Serialize};
 use tokio_stream::StreamExt as TokioStreamExt;
-use serde::{Serialize, Deserialize};
 
 /// Struct to store event data
 #[derive(Serialize, Deserialize, Debug, Clone, PartialEq)]

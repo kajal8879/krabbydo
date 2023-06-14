@@ -10,9 +10,9 @@ use egui::{
 };
 use middleware::EventEntry;
 use notification::send_notifications;
+use serde_json;
 use std::fs::File;
 use std::io::prelude::*;
-use serde_json;
 
 // https://stackoverflow.com/questions/48071513/how-to-use-one-module-from-another-module-in-a-rust-cargo-project
 // GUI elements' dimension values segregated in a different file for ease of modification
@@ -211,7 +211,7 @@ impl KrabbyDoUi {
     pub fn export_events_to_json(&self, filename: &str) -> std::io::Result<()> {
         // Serialize our events vector to a JSON string.
         let json = serde_json::to_string_pretty(&self.event_entries).unwrap();
-        
+
         // Create a file and write the JSON data to it.
         let mut file = File::create(filename)?;
         file.write_all(json.as_bytes())?;
@@ -387,7 +387,7 @@ impl KrabbyDoUi {
                         KrabbyDoUi::handle_menu_new_clicked(self);
                     }
                     if ui.button("Export").clicked() {
-                        let filename = "exported_events.json";  // Filename can be dynamically determined.
+                        let filename = "exported_events.json"; // Filename can be dynamically determined.
                         match self.export_events_to_json(filename) {
                             Ok(_) => println!("Successfully exported events to {}", filename),
                             Err(e) => eprintln!("Error exporting events: {}", e),
@@ -399,7 +399,7 @@ impl KrabbyDoUi {
                 });
 
                 ui.add(
-                widgets::TextEdit::singleline(&mut self.search_query)
+                    widgets::TextEdit::singleline(&mut self.search_query)
                         .hint_text("Search events"),
                 );
             });
