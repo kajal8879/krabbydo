@@ -279,6 +279,7 @@ impl KrabbyDoUi {
         }
         self.new_event_minute = date_time.minute();
         self.new_event_is_done = self.active_entry.is_done;
+        self.new_event_tags = self.active_entry.tags.clone();
     }
 
     /// Handle Edit button clicked on event list entry
