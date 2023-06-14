@@ -298,7 +298,7 @@ impl KrabbyDoUi {
         self.new_event_date
     }
 
-    /// Get date and time selected by the user in the dialog in DateTime<Utc> format
+    /// Get date and time selected by the user in the dialog in  `DateTime<Utc>` format
     pub fn get_selected_date_time(&mut self) -> DateTime<Utc> {
         // Considering AM / PM
         let mut hour = self.new_event_hour;
