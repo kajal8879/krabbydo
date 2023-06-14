@@ -182,7 +182,7 @@ fn test_update_task() {
 }
 #[test]
 fn test_add_task() {
-    let task_name = String::from("KrabbyDo new setup 5");
+    let task_name = String::from("KrabbyDo new setup 6");
     let task_desc = String::from("First input Done! Mongo Setup successful3");
     let reminder_time = Utc::now();
     let is_completed = false;
