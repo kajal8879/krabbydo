@@ -11,7 +11,7 @@ fn fetch_events_for_today() -> Result<Vec<EventEntry>, Box<dyn std::error::Error
 
     #[cfg(feature = "print_debug_log")]
     println!("{:?}", notification_task_list);
-    
+
     Ok(notification_task_list)
 }
 

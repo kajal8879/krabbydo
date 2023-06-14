@@ -71,7 +71,7 @@ impl EventEntry {
     pub async fn update_task(&self) -> Result<(), Box<dyn std::error::Error>> {
         #[cfg(feature = "print_debug_log")]
         println!("Updating event with unique_id: {}", self.unique_id);
-        
+
         let client = create_mongodb_client().await?;
         // Get a handle to the "todos" collection in the "tasks" database
         let db = client.database("events");
