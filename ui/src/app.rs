@@ -378,7 +378,6 @@ impl KrabbyDoUi {
     }
 
     /// Set up menu bar
-    /// Set up menu bar
     pub fn setup_menu_bar(&mut self, ctx: &egui::Context, frame: &mut eframe::Frame) {
         TopBottomPanel::top("menu_panel").show(ctx, |ui| {
             menu::bar(ui, |ui| {
