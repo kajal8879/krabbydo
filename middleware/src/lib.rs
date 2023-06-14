@@ -72,7 +72,7 @@ impl EventEntry {
         Ok(())
     }
 
-    pub async fn delete_or_mark_completed(&self) -> Result<(), Box<dyn std::error::Error>> {
+    pub async fn delete_event(&self) -> Result<(), Box<dyn std::error::Error>> {
         let client = create_mongodb_client().await?;
         let db = client.database("events");
         let collection: Collection<Document> = db.collection("todos");
@@ -80,11 +80,8 @@ impl EventEntry {
         // Define the filter to find the event by its unique_id
         let filter = doc! { "_id": self.unique_id };
 
-        // Update the is_done field to false to mark it as completed or remove the document entirely
-        let update = doc! { "$set": { "is_done": true } };
-
         // Update the document in the collection
-        collection.update_one(filter, update, None).await?;
+        collection.delete_one(filter, None).await?;
 
         Ok(())
     }
@@ -212,7 +209,7 @@ fn test_get_all_tasks() {
     assert!(result.is_ok(), "get_all_tasks failed");
 }
 #[test]
-fn test_delete_or_mark_completed() {
+fn test_delete_event() {
     let task_name = String::from("KrabbyDo new setup");
     let task_desc = String::from("Test delete_or_mark_completed");
     let reminder_time = Utc::now();
@@ -221,10 +218,10 @@ fn test_delete_or_mark_completed() {
 
     let event_entry = EventEntry::new(mongo_id, task_name, task_desc, reminder_time, is_completed);
     let rt = tokio::runtime::Runtime::new().unwrap();
-    let result = rt.block_on(async { event_entry.delete_or_mark_completed().await });
+    let result = rt.block_on(async { event_entry.delete_event().await });
 
     // Assert that the delete_or_mark_completed function succeeded
-    assert!(result.is_ok(), "delete_or_mark_completed failed");
+    assert!(result.is_ok(), "delete_event failed");
 }
 #[test]
 fn test_get_today_events() {
