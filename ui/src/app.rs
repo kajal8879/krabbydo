@@ -76,6 +76,11 @@ pub struct KrabbyDoUi {
 
     /// To set title of the new/edit dialog as per current use
     new_edit_title: String,
+
+    /// To search for a specific event based on various criteria
+    search_query: String,
+
+    new_event_tags: String,
 }
 
 impl Default for KrabbyDoUi {
@@ -93,6 +98,8 @@ impl Default for KrabbyDoUi {
             new_event_hour: 6,
             new_event_minute: 30,
             new_event_am_pm: AmPm::Pm,
+            search_query: String::new(),
+            new_event_tags: String::new(),
             date_time: Utc.with_ymd_and_hms(2023, 5, 20, 22, 2, 0).unwrap(),
             event_entries: tokio::runtime::Runtime::new()
                 .unwrap()
@@ -107,9 +114,10 @@ impl Default for KrabbyDoUi {
                 details: String::from(""),
                 date_time: Utc.with_ymd_and_hms(2000, 1, 1, 1, 1, 1).unwrap(),
                 is_done: false,
+                tags: String::new(),
             },
             new_edit_title: String::from("New Event"),
-        }
+        };
     }
 }
 
@@ -161,6 +169,7 @@ impl KrabbyDoUi {
             details: self.new_event_details.clone(),
             date_time: self.get_selected_date_time(),
             is_done: self.new_event_is_done,
+            tags: self.new_event_tags.clone(),
         };
 
         #[cfg(feature = "print_debug_log")]
@@ -338,7 +347,7 @@ impl KrabbyDoUi {
     pub fn list_events(&mut self, ui: &mut Ui, widget_id: u32, is_show_events_marked_done: bool) {
         ui.push_id(widget_id, |ui| {
             ScrollArea::vertical().show(ui, |ui| {
-                for entry in self.event_entries.clone() {
+                for entry in self.get_events() {
                     if is_show_events_marked_done {
                         if entry.is_done {
                             self.create_event_list_item(ui, entry);
@@ -365,6 +374,11 @@ impl KrabbyDoUi {
                         frame.close();
                     }
                 });
+
+                ui.add(
+                    widgets::TextEdit::singleline(&mut self.search_query)
+                        .hint_text("Search events"),
+                );
             });
         });
     }
@@ -435,6 +449,11 @@ impl KrabbyDoUi {
                 ui.separator();
                 ui.with_layout(Layout::left_to_right(Align::TOP), |ui| {
                     ui.add(Label::new(self.details_panel_time.clone()).wrap(true));
+                });
+                ui.separator();
+                ui.with_layout(Layout::left_to_right(Align::TOP), |ui| {
+                    ui.label("Tags:");
+                    ui.label(self.active_entry.tags.clone());
                 });
                 ui.separator();
                 ui.with_layout(Layout::left_to_right(Align::TOP), |ui| {
@@ -520,6 +539,18 @@ impl KrabbyDoUi {
                 ui.add(Checkbox::new(&mut self.new_event_is_done, ""));
             });
             ui.with_layout(Layout::left_to_right(Align::TOP), |ui| {
+                ui.with_layout(Layout::left_to_right(Align::TOP), |ui| {
+                    ui.set_min_width(style_constants::NEW_EDIT_DIALOG_MIN_LABEL_WIDTH);
+                    ui.label("Tags");
+                });
+                ui.horizontal(|ui| {
+                    ui.add(
+                        widgets::TextEdit::multiline(&mut self.new_event_tags)
+                            .hint_text("Enter tags"),
+                    );
+                });
+            });
+            ui.with_layout(Layout::left_to_right(Align::TOP), |ui| {
                 ui.set_max_width(style_constants::NEW_EDIT_DIALOG_MAX_WIDTH);
                 ui.with_layout(Layout::right_to_left(Align::TOP), |ui| {
                     if ui.button("Cancel").clicked() {
@@ -530,6 +561,21 @@ impl KrabbyDoUi {
                 });
             });
         });
+    }
+
+    pub fn get_events(&self) -> Vec<EventEntry> {
+        let search_query = self.search_query.to_lowercase(); // Convert search query to lowercase for case-insensitive search
+
+        self.event_entries
+            .iter()
+            .filter(|event| {
+                event.title.to_lowercase().contains(&search_query)
+                    || event.details.to_lowercase().contains(&search_query)
+                    || event.tags.to_lowercase().contains(&search_query)
+                // .any(|tag| tag.to_lowercase().contains(&search_query))
+            })
+            .cloned()
+            .collect()
     }
 }
 

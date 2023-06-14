@@ -20,8 +20,8 @@ pub fn send_notifications() {
             Notification::new()
                 .summary(&notification_task.title)
                 .body(&notification_task.details)
-                .show().unwrap();
-                
+                .show()
+                .unwrap();
         }
     }
 }
