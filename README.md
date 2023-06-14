@@ -54,7 +54,7 @@ Testing was done using unit tests embedded into the code files in each crate.
 
 - Rohan - I am satisfied with the result but in future I would like to improve the styling of the application as currently it looks a bit too bland for my taste.
 - Kajal -
-- Prachi - There are many things to figure out about the libraries and their usage. But after working on it, I am happy that I got to learn a new programming language
+- Prachi - There are many things to figure out about the libraries and their usage. But after working on it, I am happy that I got to learn a new programming language.
 
 ## License
 
