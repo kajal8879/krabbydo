@@ -83,6 +83,7 @@ pub struct KrabbyDoUi {
     /// To search for a specific event based on various criteria
     search_query: String,
 
+    /// To add tags to the events
     new_event_tags: String,
 }
 
@@ -205,6 +206,11 @@ impl KrabbyDoUi {
     /// Handle Cancel button clicked of the New / Edit Event dialog; close the dialog
     pub fn handle_new_edit_cancel_button_clicked(&mut self) {
         self.is_show_new_edit_dialog = false;
+    }
+
+    /// Handling sorting
+    pub fn sort_events_by_date(&mut self) {
+        self.event_entries.sort_by(|a, b| a.date_time.cmp(&b.date_time));
     }
 
     /// Exports events to a JSON file.
@@ -622,6 +628,9 @@ impl eframe::App for KrabbyDoUi {
             // New / Edit Event dialog
             self.setup_new_event_dialog(ctx);
         }
+
+        // Sort events before displaying
+        self.sort_events_by_date();
     }
 }
 
