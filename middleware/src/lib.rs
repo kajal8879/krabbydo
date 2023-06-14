@@ -1,5 +1,3 @@
-use std::str::FromStr;
-
 use chrono::{DateTime, Utc};
 use mongodb::bson::{doc, oid::ObjectId, Bson, Document};
 use mongodb::Collection;
@@ -115,7 +113,7 @@ impl EventEntry {
             // Add the task to the vector
             tasks.push(task);
         }
-        println!("Tasks: {:?}", tasks);
+        // println!("Tasks: {:?}", tasks);
         Ok(tasks)
     }
     pub async fn get_today_events() -> Result<Vec<EventEntry>, Box<dyn std::error::Error>> {
@@ -154,7 +152,7 @@ impl EventEntry {
             let task = EventEntry::new(unique_id, title, details, date_time, is_done);
             tasks.push(task);
         }
-        println!("Tasks: {:?}", tasks);
+        // println!("Tasks: {:?}", tasks);
         Ok(tasks)
     }
 }
@@ -164,72 +162,79 @@ pub async fn create_mongodb_client() -> Result<Client, Box<dyn std::error::Error
     let client = Client::with_options(client_options)?;
     Ok(client)
 }
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use std::str::FromStr;
+    #[test]
+    fn test_update_task() {
+        let task_name = String::from("KrabbyDo new setup 4");
+        let task_desc = String::from("update input Done! Mongo Setup successful3");
+        let reminder_time = Utc::now();
+        let is_completed = false;
+        let mongo_id = ObjectId::from_str("6482a04d44d9bc1cff4c66d7").unwrap();
 
-#[test]
-fn test_update_task() {
-    let task_name = String::from("KrabbyDo new setup 4");
-    let task_desc = String::from("update input Done! Mongo Setup successful3");
-    let reminder_time = Utc::now();
-    let is_completed = false;
-    let mongo_id = ObjectId::from_str("6482a04d44d9bc1cff4c66d7").unwrap();
+        let event_entry =
+            EventEntry::new(mongo_id, task_name, task_desc, reminder_time, is_completed);
+        let rt = tokio::runtime::Runtime::new().unwrap();
+        let result = rt.block_on(async { event_entry.update_task().await });
 
-    let event_entry = EventEntry::new(mongo_id, task_name, task_desc, reminder_time, is_completed);
-    let rt = tokio::runtime::Runtime::new().unwrap();
-    let result = rt.block_on(async { event_entry.update_task().await });
+        // Assert that the add_task function succeeded
+        assert!(result.is_ok(), "_event failed");
+    }
+    #[test]
+    fn test_add_task() {
+        let task_name = String::from("KrabbyDo new setup 6");
+        let task_desc = String::from("First input Done! Mongo Setup successful3");
+        let reminder_time = Utc::now();
+        let is_completed = false;
 
-    // Assert that the add_task function succeeded
-    assert!(result.is_ok(), "_event failed");
-}
-#[test]
-fn test_add_task() {
-    let task_name = String::from("KrabbyDo new setup 6");
-    let task_desc = String::from("First input Done! Mongo Setup successful3");
-    let reminder_time = Utc::now();
-    let is_completed = false;
+        let unique_id = ObjectId::new();
+        let event_entry =
+            EventEntry::new(unique_id, task_name, task_desc, reminder_time, is_completed);
+        let rt = tokio::runtime::Runtime::new().unwrap();
 
-    let unique_id = ObjectId::new();
-    let event_entry = EventEntry::new(unique_id, task_name, task_desc, reminder_time, is_completed);
-    let rt = tokio::runtime::Runtime::new().unwrap();
+        // Run the add_task function asynchronously
+        let result = rt.block_on(async { event_entry.add_event().await });
 
-    // Run the add_task function asynchronously
-    let result = rt.block_on(async { event_entry.add_event().await });
+        // Assert that the add_task function succeeded
+        assert!(result.is_ok(), "add_event failed");
+    }
+    #[test]
 
-    // Assert that the add_task function succeeded
-    assert!(result.is_ok(), "add_event failed");
-}
-#[test]
+    fn test_get_all_tasks() {
+        let rt = tokio::runtime::Runtime::new().unwrap();
 
-fn test_get_all_tasks() {
-    let rt = tokio::runtime::Runtime::new().unwrap();
+        // Run the get_all_tasks function asynchronously
+        let result = rt.block_on(async { EventEntry::get_all_tasks().await });
 
-    // Run the get_all_tasks function asynchronously
-    let result = rt.block_on(async { EventEntry::get_all_tasks().await });
+        // Assert that the get_all_tasks function succeeded
+        assert!(result.is_ok(), "get_all_tasks failed");
+    }
+    #[test]
+    fn test_delete_event() {
+        let task_name = String::from("KrabbyDo new setup");
+        let task_desc = String::from("Test delete_or_mark_completed");
+        let reminder_time = Utc::now();
+        let is_completed = false;
+        let mongo_id = ObjectId::from_str("6482a04d44d9bc1cff4c66d7").unwrap();
 
-    // Assert that the get_all_tasks function succeeded
-    assert!(result.is_ok(), "get_all_tasks failed");
-}
-#[test]
-fn test_delete_event() {
-    let task_name = String::from("KrabbyDo new setup");
-    let task_desc = String::from("Test delete_or_mark_completed");
-    let reminder_time = Utc::now();
-    let is_completed = false;
-    let mongo_id = ObjectId::from_str("6482a04d44d9bc1cff4c66d7").unwrap();
+        let event_entry =
+            EventEntry::new(mongo_id, task_name, task_desc, reminder_time, is_completed);
+        let rt = tokio::runtime::Runtime::new().unwrap();
+        let result = rt.block_on(async { event_entry.delete_event().await });
 
-    let event_entry = EventEntry::new(mongo_id, task_name, task_desc, reminder_time, is_completed);
-    let rt = tokio::runtime::Runtime::new().unwrap();
-    let result = rt.block_on(async { event_entry.delete_event().await });
+        // Assert that the delete_or_mark_completed function succeeded
+        assert!(result.is_ok(), "delete_event failed");
+    }
+    #[test]
+    fn test_get_today_events() {
+        let rt = tokio::runtime::Runtime::new().unwrap();
 
-    // Assert that the delete_or_mark_completed function succeeded
-    assert!(result.is_ok(), "delete_event failed");
-}
-#[test]
-fn test_get_today_events() {
-    let rt = tokio::runtime::Runtime::new().unwrap();
+        // Run the get_today_events function asynchronously
+        let result = rt.block_on(async { EventEntry::get_today_events().await });
 
-    // Run the get_today_events function asynchronously
-    let result = rt.block_on(async { EventEntry::get_today_events().await });
-
-    // Assert that the get_today_events function succeeded
-    assert!(result.is_ok(), "get_today_events failed");
+        // Assert that the get_today_events function succeeded
+        assert!(result.is_ok(), "get_today_events failed");
+    }
 }
