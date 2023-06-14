@@ -18,9 +18,8 @@ eframe = { version = "0.21.0", default-features = false, features = [
 egui_extras = { version = "0.21.0", features = [
     "datepicker",
 ] }
-serde = { version = "1", features = ["derive"] }
-# tracing-subscriber = "0.3"
 middleware = {path = "../middleware"} 
+notification = {path = "../notification"}
 
 [features]
 print_debug_log = []

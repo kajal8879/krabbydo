@@ -1,3 +1,4 @@
+use bson::oid::ObjectId;
 use chrono::offset::*;
 use chrono::DateTime;
 use chrono::Datelike;
@@ -8,10 +9,10 @@ use egui::{
     SidePanel, TopBottomPanel, Ui, Window,
 };
 use middleware::EventEntry;
-use bson::oid::ObjectId;
+use notification::send_notifications;
+use serde_json;
 use std::fs::File;
 use std::io::prelude::*;
-use serde_json;
 
 // https://stackoverflow.com/questions/48071513/how-to-use-one-module-from-another-module-in-a-rust-cargo-project
 // GUI elements' dimension values segregated in a different file for ease of modification
@@ -88,7 +89,9 @@ pub struct KrabbyDoUi {
 impl Default for KrabbyDoUi {
     /// Assign default values to struct properties
     fn default() -> Self {
-        Self {
+        send_notifications();
+
+        return Self {
             is_show_new_edit_dialog: false,
             is_show_central_panel_context_elements: false,
             new_event_title: "".to_owned(),
@@ -101,7 +104,10 @@ impl Default for KrabbyDoUi {
             search_query: String::new(),
             new_event_tags: String::new(),
             date_time: Utc.with_ymd_and_hms(2023, 5, 20, 22, 2, 0).unwrap(),
-            event_entries: tokio::runtime::Runtime::new().unwrap().block_on(async { EventEntry::get_all_tasks().await }).unwrap(),
+            event_entries: tokio::runtime::Runtime::new()
+                .unwrap()
+                .block_on(async { EventEntry::get_all_tasks().await })
+                .unwrap(),
             details_panel_title: String::from("Krabby Do"),
             details_panel_details: String::from(""),
             details_panel_time: String::from(""),
@@ -114,7 +120,7 @@ impl Default for KrabbyDoUi {
                 tags: String::new(),
             },
             new_edit_title: String::from("New Event"),
-        }
+        };
     }
 }
 
@@ -173,14 +179,18 @@ impl KrabbyDoUi {
         println!("{:?}", new_entry);
 
         if self.new_edit_title == "New Event" {
-            let _result = tokio::runtime::Runtime::new().unwrap().block_on(async { new_entry.add_event().await });
+            let _result = tokio::runtime::Runtime::new()
+                .unwrap()
+                .block_on(async { new_entry.add_event().await });
             self.event_entries.push(new_entry);
         } else if self.new_edit_title == "Edit Event" {
             #[cfg(feature = "print_debug_log")]
             println!("\nEntry edit requested!\n");
-            
-            let _result = tokio::runtime::Runtime::new().unwrap().block_on(async { new_entry.update_task().await });
-            
+
+            let _result = tokio::runtime::Runtime::new()
+                .unwrap()
+                .block_on(async { new_entry.update_task().await });
+
             if let Some(index) = self
                 .event_entries
                 .iter()
@@ -201,7 +211,7 @@ impl KrabbyDoUi {
     pub fn export_events_to_json(&self, filename: &str) -> std::io::Result<()> {
         // Serialize our events vector to a JSON string.
         let json = serde_json::to_string_pretty(&self.event_entries).unwrap();
-        
+
         // Create a file and write the JSON data to it.
         let mut file = File::create(filename)?;
         file.write_all(json.as_bytes())?;
@@ -377,7 +387,7 @@ impl KrabbyDoUi {
                         KrabbyDoUi::handle_menu_new_clicked(self);
                     }
                     if ui.button("Export").clicked() {
-                        let filename = "exported_events.json";  // Filename can be dynamically determined.
+                        let filename = "exported_events.json"; // Filename can be dynamically determined.
                         match self.export_events_to_json(filename) {
                             Ok(_) => println!("Successfully exported events to {}", filename),
                             Err(e) => eprintln!("Error exporting events: {}", e),
@@ -389,7 +399,7 @@ impl KrabbyDoUi {
                 });
 
                 ui.add(
-                widgets::TextEdit::singleline(&mut self.search_query)
+                    widgets::TextEdit::singleline(&mut self.search_query)
                         .hint_text("Search events"),
                 );
             });
@@ -584,9 +594,8 @@ impl KrabbyDoUi {
             .filter(|event| {
                 event.title.to_lowercase().contains(&search_query)
                     || event.details.to_lowercase().contains(&search_query)
-                    || event
-                        .tags.to_lowercase().contains(&search_query)
-                        // .any(|tag| tag.to_lowercase().contains(&search_query))
+                    || event.tags.to_lowercase().contains(&search_query)
+                // .any(|tag| tag.to_lowercase().contains(&search_query))
             })
             .cloned()
             .collect()
