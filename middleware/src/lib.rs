@@ -84,7 +84,7 @@ impl EventEntry {
 
         Ok(())
     }
-    ///This function delete the event from teh database
+    /// This function deletes the event from the database
     pub async fn delete_event(&self) -> Result<(), Box<dyn std::error::Error>> {
         let client = create_mongodb_client().await?;
         let db = client.database("events");
