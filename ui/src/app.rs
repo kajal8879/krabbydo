@@ -10,7 +10,6 @@ use egui::{
 };
 use middleware::EventEntry;
 use notification::send_notifications;
-use serde_json;
 use std::fs::File;
 use std::io::prelude::*;
 
@@ -91,8 +90,7 @@ impl Default for KrabbyDoUi {
     /// Assign default values to struct properties
     fn default() -> Self {
         send_notifications();
-
-        return Self {
+        Self {
             is_show_new_edit_dialog: false,
             is_show_central_panel_context_elements: false,
             new_event_title: "".to_owned(),
@@ -121,7 +119,7 @@ impl Default for KrabbyDoUi {
                 tags: String::new(),
             },
             new_edit_title: String::from("New Event"),
-        };
+        }
     }
 }
 
@@ -210,7 +208,8 @@ impl KrabbyDoUi {
 
     /// Handling sorting
     pub fn sort_events_by_date(&mut self) {
-        self.event_entries.sort_by(|a, b| a.date_time.cmp(&b.date_time));
+        self.event_entries
+            .sort_by(|a, b| a.date_time.cmp(&b.date_time));
     }
 
     /// Exports events to a JSON file.
@@ -373,10 +372,8 @@ impl KrabbyDoUi {
                         if entry.is_done {
                             self.create_event_list_item(ui, entry);
                         }
-                    } else {
-                        if !entry.is_done {
-                            self.create_event_list_item(ui, entry);
-                        }
+                    } else if !entry.is_done {
+                        self.create_event_list_item(ui, entry);
                     }
                 }
             });

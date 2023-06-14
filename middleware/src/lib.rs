@@ -84,7 +84,7 @@ impl EventEntry {
 
         Ok(())
     }
-    ///This function delete the event from teh database 
+    /// This function deletes the event from the database
     pub async fn delete_event(&self) -> Result<(), Box<dyn std::error::Error>> {
         let client = create_mongodb_client().await?;
         let db = client.database("events");
@@ -157,7 +157,7 @@ impl EventEntry {
 
         while let Some(result) = TokioStreamExt::try_next(&mut cursor).await? {
             let unique_id = match result.get("_id") {
-                Some(Bson::ObjectId(object_id)) => object_id.clone(),
+                Some(Bson::ObjectId(object_id)) => *object_id,
                 _ => return Err("Invalid unique_id".into()),
             };
             let title = result.get_str("title")?.to_string();
