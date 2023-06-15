@@ -54,9 +54,8 @@ Testing was done using unit tests embedded into the code files in each crate.
 ### What Didn't Work
 
 - Rohan - Styling the UI elements.
-- Kajal - Making the fields in eventEntry structs optional.Right now all the fields are mandatory.
-  Also for notification crate we couldn't implement background user agent
-- Prachi -Notifications
+- Kajal - Making the fields in eventEntry structs optional; currently all the fields are mandatory. Also, for notification crate we couldn't implement a background user agent.
+- Prachi - Notifications.
 
 ### Conclusion
 
