@@ -49,19 +49,19 @@ Testing was done using unit tests embedded into the code files in each crate.
 
 - Rohan - Creating UI elements and implementing layouts for them.
 - Kajal - Created middleware section which interacts with mongoDB. Also Added notification crate which sends out notifications as part of the MVP criteria.
-- Prachi -Implementation of Searching, Sorting, Exporting and adding tags to the events
+- Prachi - Implementation of Searching, Sorting, Exporting and adding tags to the events
 
 ### What Didn't Work
 
 - Rohan - Styling the UI elements.
 - Kajal - Making the fields in eventEntry structs optional; currently all the fields are mandatory. Also, for notification crate we couldn't implement a background user agent.
-- Prachi - Notifications.
+- Prachi - Notifications (My Macbook was throwing some errors while implementing notifications, the notification was not going through the Notification Center).
 
 ### Conclusion
 
 - Rohan - I am satisfied with the result but in future I would like to improve the styling of the application as currently it looks a bit too bland for my taste.
-- Kajal - Establishing mongoDb connection was tricky part. And dealing with data was difficult as well. Faced so many parsing issues , but it was a great learning. now I feel confident with datatypes and parsing. Finding a proper crate which will work for you was difficult, as I feel theer is lack of documentation for rust.
-- Prachi -There are many things to figure out about the libraries and their usage. But after working on it, I am happy that I got to learn a new programming language.
+- Kajal - Establishing MongoDB connection was the tricky part. And dealing with data was difficult as well. Faced so many parsing issues, but it was a great learning experience. now I feel confident with data types and parsing. Finding a proper crate which will work for you was difficult, as I feel there is lack of documentation for rust.
+- Prachi - There are many things to figure out about the libraries and their usage. But after working on it, I am happy that I got to learn a new programming language.
 
 ## License
 
@@ -85,9 +85,9 @@ Krabby Do consists of three crates with each crate created and managed by a memb
 
 - #### Notifications
 
-  This component fetches data based on date and send the notifications to the user. We uses the ‘notify-rust’ library for implementation. For each task, a separate notification is sent.
+  This component fetches data based on date and send the notifications to the user. We use the ‘notify-rust’ library for implementation. For each task, a separate notification is sent.
 
-  This crate is handled by Kajal Patil.
+  This crate is handled by Kajal Patil/Prachi Kashyap.
 
 ## Repository
 
