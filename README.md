@@ -18,15 +18,21 @@ Krabby Do is an application based in Rust that allows a user to create to-do lis
 ## Build Instructions
 
 1. Install Rust in your system if you don't have it installed. It is available here: https://www.rust-lang.org/tools/install
-2. Clone the repository from either of the following links:
+2. Install MongoDB Community Edition from here: https://www.mongodb.com/docs/manual/administration/install-community/
+3. Install MongoDB Compass from here: https://www.mongodb.com/try/download/compass
+4. Clone the repository from either of the following links:
    - https://gitlab.cecs.pdx.edu/krabbydo/krabbydo.git (HTTPS)
    - git@gitlab.cecs.pdx.edu:krabbydo/krabbydo.git (SSH)
-3. Navigate to the repository.
-4. Open terminal and run the following command:
+5. Navigate to the repository.
+6. Open terminal and run the following command:
 
 ```sh
 cargo run
 ```
+7. To view the entries in the database:
+    1. Open MongoDB Compass and connect to the following URI: `mongodb://localhost:27017/`
+    2. Go to the database named ***events***.
+    3. Go to the document named ***todos***, the event entries are listed there.
 
 ## Testing
 
