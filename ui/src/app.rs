@@ -641,6 +641,8 @@ impl eframe::App for KrabbyDoUi {
 
 #[cfg(test)]
 mod tests {
+    use std::io::BufReader;
+
     use super::*;
     #[test]
     fn test_get_selected_date() {
@@ -657,9 +659,122 @@ mod tests {
         test_ui.new_event_date = NaiveDate::from_ymd_opt(2023, 6, 9);
         test_ui.new_event_hour = 15;
         test_ui.new_event_minute = 9;
-        println!("{}",test_ui.get_selected_date_time());
+        println!("{}", test_ui.get_selected_date_time());
         let test_date_time = Utc.with_ymd_and_hms(2023, 6, 9, 15, 9, 0).unwrap();
         println!("{}", test_date_time);
         assert_eq!(test_ui.get_selected_date_time(), test_date_time);
+    }
+
+    #[test]
+    fn test_get_events() {
+        let mut test_ui = KrabbyDoUi::default();
+        test_ui.is_testing = true;
+        // Add some mock data to test_ui.event_entries
+        let event_entry1 = EventEntry::new(
+            ObjectId::new(),
+            "Title1".to_string(),
+            "Details1".to_string(),
+            Utc::now(),
+            false,
+            "Tag1".to_string(),
+        );
+        let event_entry2 = EventEntry::new(
+            ObjectId::new(),
+            "Title2".to_string(),
+            "Details2".to_string(),
+            Utc::now(),
+            false,
+            "Tag2".to_string(),
+        );
+        test_ui.event_entries.push(event_entry1);
+        test_ui.event_entries.push(event_entry2);
+
+        // Set search query
+        test_ui.search_query = "Title1".to_string();
+
+        // Test get_events
+        let results = test_ui.get_events();
+        assert_eq!(results.len(), 1);
+        assert_eq!(results[0].title, "Title1");
+    }
+
+    #[test]
+    fn test_sort_events_by_date() {
+        let mut test_ui = KrabbyDoUi::default();
+        test_ui.is_testing = true;
+        // Add some mock data to test_ui.event_entries
+        let event_entry1 = EventEntry::new(
+            ObjectId::new(),
+            "Title1".to_string(),
+            "Details1".to_string(),
+            Utc::now() + chrono::Duration::hours(2),
+            false,
+            "Tag1".to_string(),
+        );
+        let event_entry2 = EventEntry::new(
+            ObjectId::new(),
+            "Title2".to_string(),
+            "Details2".to_string(),
+            Utc::now() + chrono::Duration::hours(1),
+            false,
+            "Tag2".to_string(),
+        );
+        test_ui.event_entries.push(event_entry1);
+        test_ui.event_entries.push(event_entry2);
+
+        // Sort events
+        test_ui.sort_events_by_date();
+
+        // Test sort_events_by_date
+        assert_eq!(test_ui.event_entries[0].title, "test scaez sjxbvjkd");
+        assert_eq!(test_ui.event_entries[1].title, "");
+    }
+
+    #[test]
+    fn test_export_events_to_json() -> std::io::Result<()> {
+        let mut test_ui = KrabbyDoUi::default();
+        test_ui.is_testing = true;
+        // Clear any existing events
+        test_ui.event_entries.clear();
+
+        // Add some mock data to test_ui.event_entries
+        let event_entry1 = EventEntry::new(
+            ObjectId::new(),
+            "Title1".to_string(),
+            "Details1".to_string(),
+            Utc::now() + chrono::Duration::hours(2),
+            false,
+            "Tag1".to_string(),
+        );
+        let event_entry2 = EventEntry::new(
+            ObjectId::new(),
+            "Title2".to_string(),
+            "Details2".to_string(),
+            Utc::now() + chrono::Duration::hours(1),
+            false,
+            "Tag2".to_string(),
+        );
+        test_ui.event_entries.push(event_entry1);
+        test_ui.event_entries.push(event_entry2);
+
+        // Export to json
+        let filename = "test_export.json";
+        test_ui.export_events_to_json(filename)?;
+
+        // Check if the file has been created
+        assert!(std::path::Path::new(filename).exists());
+
+        // Open and read the file
+        let file = File::open(filename)?;
+        let reader = BufReader::new(file);
+        let read_events: Vec<EventEntry> = serde_json::from_reader(reader)?;
+
+        // Check if the exported data matches with the original data
+        assert_eq!(read_events, test_ui.event_entries);
+
+        // Clean up the test file
+        std::fs::remove_file(filename)?;
+
+        Ok(())
     }
 }
