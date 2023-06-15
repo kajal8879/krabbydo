@@ -48,20 +48,21 @@ Testing was done using unit tests embedded into the code files in each crate.
 ### What Worked
 
 - Rohan - Creating UI elements and implementing layouts for them.
-- Kajal - Created middleware section which interacts with mongoDB
-- Prachi -
+- Kajal - Created middleware section which interacts with mongoDB.Also Added notification crate which sends out notification as part of MVP criteria.
+- Prachi -Implementation of Searching, Sorting, Exporting and adding tags to the events
 
 ### What Didn't Work
 
 - Rohan - Styling the UI elements.
 - Kajal - Making the fields in eventEntry structs optional.Right now all the fields are mandatory.
-- Prachi -
+  Also for notification crate we couldn't implement background user agent
+- Prachi -Notifications
 
 ### Conclusion
 
 - Rohan - I am satisfied with the result but in future I would like to improve the styling of the application as currently it looks a bit too bland for my taste.
 - Kajal - Establishing mongoDb connection was tricky part. And dealing with data was difficult as well. Faced so many parsing issues , but it was a great learning. now I feel confident with datatypes and parsing. Finding a proper crate which will work for you was difficult, as I feel theer is lack of documentation for rust.
-- Prachi -
+- Prachi -There are many things to figure out about the libraries and their usage. But after working on it, I am happy that I got to learn a new programming language.
 
 ## License
 
