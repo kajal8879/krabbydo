@@ -48,7 +48,7 @@ Testing was done using unit tests embedded into the code files in each crate.
 ### What Worked
 
 - Rohan - Creating UI elements and implementing layouts for them.
-- Kajal - Created middleware section which interacts with mongoDB.Also Added notification crate which sends out notification as part of MVP criteria.
+- Kajal - Created middleware section which interacts with mongoDB. Also Added notification crate which sends out notifications as part of the MVP criteria.
 - Prachi -Implementation of Searching, Sorting, Exporting and adding tags to the events
 
 ### What Didn't Work
@@ -69,7 +69,7 @@ Testing was done using unit tests embedded into the code files in each crate.
 
 ## Project Structure
 
-Krabby Do consists of three crates with each crate created and managed by a member of the team:
+Krabby Do consists of three crates with each crate created and managed by a member of the team.
 
 - #### UI
 
@@ -85,9 +85,9 @@ Krabby Do consists of three crates with each crate created and managed by a memb
 
 - #### Notifications
 
-  This component will fetch data based on date and send the notifications to the user. We will use the ‘notify-rust’ library for implementation. For each task, a separate notification will be sent.
+  This component fetches data based on date and send the notifications to the user. We uses the ‘notify-rust’ library for implementation. For each task, a separate notification is sent.
 
-  This crate is handled by Prachi Kashyap.
+  This crate is handled by Kajal Patil.
 
 ## Repository
 
