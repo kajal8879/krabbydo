@@ -84,13 +84,15 @@ pub struct KrabbyDoUi {
 
     /// To add tags to the events
     new_event_tags: String,
+
+    /// To disable notifications while testing Krabby Do UI because it is not required and it fails tests otherwise
+    is_testing: bool,
 }
 
 impl Default for KrabbyDoUi {
     /// Assign default values to struct properties
     fn default() -> Self {
-        send_notifications();
-        Self {
+        let ui = Self {
             is_show_new_edit_dialog: false,
             is_show_central_panel_context_elements: false,
             new_event_title: "".to_owned(),
@@ -119,7 +121,12 @@ impl Default for KrabbyDoUi {
                 tags: String::new(),
             },
             new_edit_title: String::from("New Event"),
+            is_testing: false,
+        };
+        if ui.is_testing {
+            send_notifications();
         }
+        ui
     }
 }
 
@@ -646,10 +653,13 @@ mod tests {
     #[test]
     fn test_get_selected_date_time() {
         let mut test_ui = KrabbyDoUi::default();
+        test_ui.is_testing = true;
         test_ui.new_event_date = NaiveDate::from_ymd_opt(2023, 6, 9);
         test_ui.new_event_hour = 15;
         test_ui.new_event_minute = 9;
+        println!("{}",test_ui.get_selected_date_time());
         let test_date_time = Utc.with_ymd_and_hms(2023, 6, 9, 15, 9, 0).unwrap();
+        println!("{}", test_date_time);
         assert_eq!(test_ui.get_selected_date_time(), test_date_time);
     }
 }
