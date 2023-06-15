@@ -29,10 +29,11 @@ Krabby Do is an application based in Rust that allows a user to create to-do lis
 ```sh
 cargo run
 ```
+
 7. To view the entries in the database:
-    1. Open MongoDB Compass and connect to the following URI: `mongodb://localhost:27017/`
-    2. Go to the database named ***events***.
-    3. Go to the document named ***todos***, the event entries are listed there.
+   1. Open MongoDB Compass and connect to the following URI: `mongodb://localhost:27017/`
+   2. Go to the database named **_events_**.
+   3. Go to the document named **_todos_**, the event entries are listed there.
 
 ## Testing
 
@@ -47,20 +48,20 @@ Testing was done using unit tests embedded into the code files in each crate.
 ### What Worked
 
 - Rohan - Creating UI elements and implementing layouts for them.
-- Kajal -
-- Prachi - Implementation of Searching, Sorting, Exporting and adding tags to the events
+- Kajal - Created middleware section which interacts with mongoDB
+- Prachi -
 
 ### What Didn't Work
 
 - Rohan - Styling the UI elements.
-- Kajal -
-- Prachi - Notifications
+- Kajal - Making the fields in eventEntry structs optional.Right now all the fields are mandatory.
+- Prachi -
 
 ### Conclusion
 
 - Rohan - I am satisfied with the result but in future I would like to improve the styling of the application as currently it looks a bit too bland for my taste.
-- Kajal -
-- Prachi - There are many things to figure out about the libraries and their usage. But after working on it, I am happy that I got to learn a new programming language.
+- Kajal - Establishing mongoDb connection was tricky part. And dealing with data was difficult as well. Faced so many parsing issues , but it was a great learning. now I feel confident with datatypes and parsing. Finding a proper crate which will work for you was difficult, as I feel theer is lack of documentation for rust.
+- Prachi -
 
 ## License
 
@@ -78,7 +79,7 @@ Krabby Do consists of three crates with each crate created and managed by a memb
 
 - #### Middleware
 
-  This component will connect with the database and will reflect the changes done by the user to the database. As a standard practice, the delete option will update the active indicator to ‘No’ from ‘Yes’. Middleware will consist of four APIs: create/update/fetch/delete . This component will form a library crate which can be utilized by the UI as well as the Notification Crate.
+  This component connects with the database and changes done by the user reflects in database. As a standard practice, the delete option updates the active indicator to ‘No’ from ‘Yes’. Middleware consists of six APIs: create/update/fetch all tasks/ fetch todays tasks/delete/ mark as done . This component is a library crate which is utilized by the UI as well as the Notification Crate.
 
   This crate is handled by Kajal Patil.
 
